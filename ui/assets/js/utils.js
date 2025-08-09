@@ -255,3 +255,16 @@ const StringHelper = {
         return text.replace(/[&<>"']/g, function(m) { return map[m]; });
     }
 };
+
+// Debounce function for search inputs
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
