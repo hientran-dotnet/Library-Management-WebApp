@@ -1,21 +1,42 @@
 // Modal functionality
 function initializeModal() {
+    console.log('Initializing modal...');
+    
     const addBookBtn = document.getElementById('addBookBtn');
     const addBookModal = document.getElementById('addBookModal');
     const closeModal = document.getElementById('closeModal');
     const cancelBtn = document.getElementById('cancelBtn');
 
-    addBookBtn.addEventListener('click', () => {
+    console.log('addBookBtn:', addBookBtn);
+    console.log('addBookModal:', addBookModal);
+    
+    if (!addBookBtn) {
+        console.error('Add Book button not found!');
+        return;
+    }
+    
+    if (!addBookModal) {
+        console.error('Add Book modal not found!');
+        return;
+    }
+
+    addBookBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('Add Book button clicked!');
         addBookModal.classList.remove('hidden');
     });
 
-    closeModal.addEventListener('click', () => {
-        addBookModal.classList.add('hidden');
-    });
+    if (closeModal) {
+        closeModal.addEventListener('click', () => {
+            addBookModal.classList.add('hidden');
+        });
+    }
 
-    cancelBtn.addEventListener('click', () => {
-        addBookModal.classList.add('hidden');
-    });
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            addBookModal.classList.add('hidden');
+        });
+    }
 
     // Close modal when clicking outside
     addBookModal.addEventListener('click', (e) => {
@@ -23,6 +44,8 @@ function initializeModal() {
             addBookModal.classList.add('hidden');
         }
     });
+    
+    console.log('Modal initialization complete');
 }
 
 // Form submission handler
