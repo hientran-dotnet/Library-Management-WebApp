@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Sách - Thư Viện</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5e72e4',
+                        secondary: '#8392ab',
+                        success: '#2dce89',
+                        info: '#11cdef',
+                        warning: '#fb6340',
+                        danger: '#f5365c',
+                        dark: '#212529'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .result {
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .result.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .result.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        /* Notification Popup Styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: -400px;
+            width: 350px;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transition: right 0.3s ease-in-out;
+            font-family: Arial, sans-serif;
+        }
+        
+        .notification.show {
+            right: 20px;
+        }
+        
+        .notification.success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+        }
+        
+        .notification.error {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .notification .notification-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 8px;
+        }
+        
+        .notification .notification-title {
+            font-weight: bold;
+            font-size: 16px;
+            flex: 1;
+        }
+        
+        .notification .notification-close {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 10px;
+            opacity: 0.7;
+        }
+        
+        .notification .notification-close:hover {
+            opacity: 1;
+        }
+        
+        .notification .notification-body {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        /* Sidebar Collapsible Styles */
+        .sidebar {
+            transition: width 0.3s ease-in-out;
+        }
+        
+        .sidebar.collapsed {
+            width: 4rem; /* 64px */
+        }
+        
+        .sidebar.expanded {
+            width: 16rem; /* 256px */
+        }
+        
+        /* Prevent flash of unstyled content */
+        .sidebar-preload {
+            transition: none !important;
+        }
+        
+        .sidebar-text {
+            opacity: 1;
+            transition: opacity 0.2s ease-in-out;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        
+        .sidebar.collapsed .sidebar-text {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .sidebar-icon {
+            min-width: 1.5rem;
+            display: flex;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .collapse-btn {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .sidebar.collapsed .collapse-btn {
+            transform: rotate(180deg);
+        }
+        
+        /* Tooltip for collapsed sidebar */
+        .tooltip {
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 0.5rem;
+            background-color: #374151;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 1000;
+        }
+        
+        .tooltip::before {
+            content: '';
+            position: absolute;
+            right: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 5px solid transparent;
+            border-right-color: #374151;
+        }
+        
+        .sidebar.collapsed .nav-item:hover .tooltip {
+            opacity: 1;
+        }
+        
+        .sidebar.collapsed .nav-item {
+            position: relative;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 1023px) {
+            .sidebar {
+                width: 16rem !important;
+            }
+            
+            .sidebar .tooltip {
+                display: none;
+            }
+        }
+        
+        /* Smooth transitions for main content */
+        #mainContent {
+            transition: margin-left 0.3s ease-in-out;
+        }
+        
+        /* Prevent transitions during preload */
+        .sidebar-preload,
+        .sidebar-preload * {
+            transition: none !important;
+        }
+    </style>
+    
+    <!-- Prevent sidebar flash on page load -->
+    <script>
+        (function() {
+            // Check localStorage immediately
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            
+            // Add styles to document head to prevent flash
+            const style = document.createElement('style');
+            style.textContent = `
+                .sidebar {
+                    width: ${isCollapsed ? '4rem' : '16rem'} !important;
+                    transition: none !important;
+                }
+                .sidebar.sidebar-preload .sidebar-text {
+                    opacity: ${isCollapsed ? '0' : '1'} !important;
+                    transition: none !important;
+                }
+                #mainContent {
+                    margin-left: ${isCollapsed ? '4rem' : '16rem'} !important;
+                    transition: none !important;
+                }
+                @media (max-width: 1023px) {
+                    .sidebar {
+                        width: 16rem !important;
+                    }
+                    #mainContent {
+                        margin-left: 0 !important;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Store the style element to remove it later
+            window.sidebarPreloadStyle = style;
+            
+            // Set initial collapsed state class if needed
+            window.sidebarInitialState = isCollapsed;
+        })();
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar sidebar-preload expanded fixed left-0 top-0 h-full bg-white shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-50">
+        <!-- Header with Toggle Button -->
+        <div class="flex items-center justify-between p-4 border-b">
+            <div class="flex items-center overflow-hidden">
+                <i class="fas fa-book text-primary text-xl sidebar-icon"></i>
+                <span class="sidebar-text ml-2 text-xl font-bold text-gray-800 whitespace-nowrap">Quản Lý Thư Viện</span>
+            </div>
+            <button id="sidebarToggle" class="collapse-btn text-gray-500 hover:text-gray-700 focus:outline-none lg:block hidden">
+                <i class="fas fa-chevron-left text-lg"></i>
+            </button>
+        </div>
+        
+        <!-- Navigation Menu -->
+        <nav class="mt-4">
+            <ul class="space-y-1">
+                <li class="nav-item">
+                    <a href="index.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 relative">
+                        <i class="fas fa-tachometer-alt sidebar-icon"></i>
+                        <span class="sidebar-text ml-3 whitespace-nowrap">Dashboard</span>
+                        <div class="tooltip">Dashboard</div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="books.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 bg-primary text-white relative">
+                        <i class="fas fa-book sidebar-icon"></i>
+                        <span class="sidebar-text ml-3 whitespace-nowrap">Quản Lý Sách</span>
+                        <div class="tooltip">Quản Lý Sách</div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="members.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 relative">
+                        <i class="fas fa-users sidebar-icon"></i>
+                        <span class="sidebar-text ml-3 whitespace-nowrap">Quản Lý Thành Viên</span>
+                        <div class="tooltip">Quản Lý Thành Viên</div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="borrowing.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 relative">
+                        <i class="fas fa-hand-holding sidebar-icon"></i>
+                        <span class="sidebar-text ml-3 whitespace-nowrap">Mượn/Trả Sách</span>
+                        <div class="tooltip">Mượn/Trả Sách</div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="categories.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 relative">
+                        <i class="fas fa-tags sidebar-icon"></i>
+                        <span class="sidebar-text ml-3 whitespace-nowrap">Danh Mục</span>
+                        <div class="tooltip">Danh Mục</div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="reports.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 relative">
+                        <i class="fas fa-chart-bar sidebar-icon"></i>
+                        <span class="sidebar-text ml-3 whitespace-nowrap">Báo Cáo</span>
+                        <div class="tooltip">Báo Cáo</div>
+                    </a>
+                </li>
+                <li class="border-t pt-2 mt-4">
+                    <div class="nav-item">
+                        <a href="settings.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 relative">
+                            <i class="fas fa-cog sidebar-icon"></i>
+                            <span class="sidebar-text ml-3 whitespace-nowrap">Cài Đặt</span>
+                            <div class="tooltip">Cài Đặt</div>
+                        </a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 relative">
+                        <i class="fas fa-user sidebar-icon"></i>
+                        <span class="sidebar-text ml-3 whitespace-nowrap">Hồ Sơ</span>
+                        <div class="tooltip">Hồ Sơ</div>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="lg:ml-64 min-h-screen transition-all duration-300 ease-in-out">
+        <!-- Top Navigation -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="flex items-center justify-between px-6 py-4">
+                <div class="flex items-center">
+                    <button id="menuToggle" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-800 ml-3 lg:ml-0">Quản Lý Sách</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative hidden md:block">
+                        <input type="text" placeholder="Tìm kiếm sách..." class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <button class="relative text-gray-600 hover:text-gray-900 focus:outline-none">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute -top-1 -right-1 bg-danger text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                    </button>
+                    <div class="relative">
+                        <button class="flex items-center text-gray-600 hover:text-gray-900 focus:outline-none">
+                            <img class="h-8 w-8 rounded-full object-cover" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="User">
+                            <span class="ml-2 font-medium">Admin</span>
+                            <i class="fas fa-chevron-down ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Books Management Content -->
+        <main class="p-6">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-primary bg-opacity-10 text-primary">
+                            <i class="fas fa-book text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Tổng số đầu sách</p>
+                            <p id="totalBooks" class="text-2xl font-bold text-gray-900">-</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-success bg-opacity-10 text-success">
+                            <i class="fas fa-copy text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Tổng số bản sao</p>
+                            <p id="totalCopies" class="text-2xl font-bold text-gray-900">-</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-info bg-opacity-10 text-info">
+                            <i class="fas fa-tags text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Số danh mục</p>
+                            <p id="totalCategories" class="text-2xl font-bold text-gray-900">-</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-warning bg-opacity-10 text-warning">
+                            <i class="fas fa-chart-line text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">TB. sách/đầu</p>
+                            <p id="avgQuantity" class="text-2xl font-bold text-gray-900">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="mb-6 bg-white rounded-lg shadow-sm p-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                    <div class="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
+                        
+                        <button id="addBookBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary hover:bg-opacity-90 transition-colors duration-200 flex items-center">
+                            <i class="fas fa-plus mr-2"></i>
+                            Thêm Sách Mới
+                        </button>
+                        
+                        <!-- Bulk Actions Container (Hidden by default) -->
+                        <div id="bulkActionsContainer" class="hidden flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-center text-sm text-blue-700">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <span id="selectedCount">0 sách được chọn</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="bulkDeleteBtn" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors duration-200 flex items-center">
+                                    <i class="fas fa-trash mr-1"></i>
+                                    Xóa
+                                </button>
+                                <button id="bulkExportBtn" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 transition-colors duration-200 flex items-center">
+                                    <i class="fas fa-file-export mr-1"></i>
+                                    Xuất Excel
+                                </button>
+                                <button id="bulkCategoryBtn" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors duration-200 flex items-center">
+                                    <i class="fas fa-tags mr-1"></i>
+                                    Đổi danh mục
+                                </button>
+                            </div>
+                        </div>
+                        <!-- <button class="bg-success text-white px-4 py-2 rounded-lg hover:bg-success hover:bg-opacity-90 transition-colors duration-200 flex items-center">
+                            <i class="fas fa-file-import mr-2"></i>
+                            Import Excel -->
+                        <!-- </button>
+                         Xuất thông tin sách ra excel
+                        <button class="bg-info text-white px-4 py-2 rounded-lg hover:bg-info hover:bg-opacity-90 transition-colors duration-200 flex items-center">
+                            <i class="fas fa-file-export mr-2"></i>
+                            Export Excel
+                        </button> -->
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <select id="categoryFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="">Tất cả danh mục</option>
+                            <option value="1">Công nghệ</option>
+                            <option value="2">Văn học</option>
+                            <option value="3">Khoa học</option>
+                            <option value="4">Lịch sử</option>
+                            <option value="5">Truyện tranh</option>
+                            <option value="6">Khác</option>
+                        </select>
+                        <select class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="">Trạng thái</option>
+                            <option value="available">Có sẵn</option>
+                            <option value="borrowed">Đã mượn</option>
+                            <option value="maintenance">Bảo trì</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Books Table -->
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b">
+                    <h3 class="text-lg font-semibold text-gray-800">Danh Sách Sách</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table id="booksTable" class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <input type="checkbox" id="selectAllBooks" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sách</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tác giả</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Danh mục</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ISBN</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Số lượng</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="booksTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Data will be loaded here via JavaScript -->
+                        </tbody>
+                    </table>
+                    
+                    <!-- Loading State -->
+                    <div id="loadingState" class="flex justify-center items-center py-8">
+                        <div class="text-center">
+                            <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-2"></i>
+                            <p class="text-gray-500">Đang tải dữ liệu...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="emptyState" class="flex justify-center items-center py-8 hidden">
+                        <div class="text-center">
+                            <i class="fas fa-book-open text-4xl text-gray-300 mb-4"></i>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">Chưa có sách nào</h3>
+                            <p class="text-gray-500">Thêm sách đầu tiên để bắt đầu quản lý thư viện</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pagination -->
+                <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <button id="prevPageMobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50" disabled>
+                            Trước
+                        </button>
+                        <button id="nextPageMobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50" disabled>
+                            Sau
+                        </button>
+                    </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p id="paginationInfo" class="text-sm text-gray-700">
+                                Hiển thị <span class="font-medium">-</span> đến <span class="font-medium">-</span> của
+                                <span class="font-medium">-</span> kết quả
+                            </p>
+                        </div>
+                        <div>
+                            <nav id="paginationNav" class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                <!-- Pagination buttons will be generated here -->
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Book Modal -->
+    <div id="addBookModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Thêm Sách Mới</h3>
+                    <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form id="bookForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Tên sách *</label>
+                            <input type="text" name="title" required class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Tác giả *</label>
+                            <input type="text" name="author" required class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">ISBN</label>
+                            <input type="text" name="isbn" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Danh mục</label>
+                            <select name="categoryId" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="">Chọn danh mục</option>
+                                <option value="1">Công nghệ</option>
+                                <option value="2">Văn học</option>
+                                <option value="3">Khoa học</option>
+                                <option value="4">Lịch sử</option>
+                                <option value="5">Truyện tranh</option>
+                                <option value="6">Khác</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Năm xuất bản</label>
+                            <input type="number" name="publishYear" min="1000" max="2024" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Số lượng</label>
+                            <input type="number" name="quantity" min="0" value="1" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Mô tả</label>
+                        <textarea name="description" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Đường dẫn hình ảnh</label>
+                        <input type="text" name="imagePath" placeholder="Nhập URL hoặc đường dẫn ảnh (tùy chọn)" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <p class="mt-1 text-xs text-gray-500">Ví dụ: https://example.com/image.jpg hoặc assets/images/book.jpg</p>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" id="cancelBtn" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            Hủy
+                        </button>
+                        <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            Thêm Sách
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Book Modal -->
+    <div id="editBookModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Chỉnh Sửa Thông Tin Sách</h3>
+                    <button id="closeEditModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form id="editBookForm" class="space-y-4">
+                    <input type="hidden" name="bookId" id="editBookId">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Tên sách *</label>
+                            <input type="text" name="title" id="editTitle" required class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Tác giả *</label>
+                            <input type="text" name="author" id="editAuthor" required class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">ISBN</label>
+                            <input type="text" name="isbn" id="editIsbn" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Danh mục</label>
+                            <select name="categoryId" id="editCategoryId" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="">Chọn danh mục</option>
+                                <option value="1">Công nghệ</option>
+                                <option value="2">Văn học</option>
+                                <option value="3">Khoa học</option>
+                                <option value="4">Lịch sử</option>
+                                <option value="5">Truyện tranh</option>
+                                <option value="6">Khác</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Năm xuất bản</label>
+                            <input type="number" name="publishYear" id="editPublishYear" min="1000" max="2025" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Số lượng</label>
+                            <input type="number" name="quantity" id="editQuantity" min="0" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Mô tả</label>
+                        <textarea name="description" id="editDescription" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Đường dẫn hình ảnh</label>
+                        <input type="text" name="imagePath" id="editImagePath" placeholder="Nhập URL hoặc đường dẫn ảnh (tùy chọn)" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <p class="mt-1 text-xs text-gray-500">Ví dụ: https://example.com/image.jpg hoặc assets/images/book.jpg</p>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" id="cancelEditBtn" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            Hủy
+                        </button>
+                        <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-warning hover:bg-warning hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-warning">
+                            Cập Nhật
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+    <!-- JavaScript -->
+    <script src="assets/js/sidebar.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/books.js"></script>
+    <script src="assets/js/modal.js"></script>
+    <script src="assets/js/edit-modal.js"></script>
+    <script src="assets/js/init.js"></script>
+</body>
+</html>

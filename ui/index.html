@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Thư Viện - Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5e72e4',
+                        secondary: '#8392ab',
+                        success: '#2dce89',
+                        info: '#11cdef',
+                        warning: '#fb6340',
+                        danger: '#f5365c',
+                        dark: '#212529'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed left-0 top-0 w-64 h-full bg-white shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-50">
+        <div class="p-4 border-b">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-book text-primary mr-2"></i>
+                Quản Lý Thư Viện
+            </h2>
+        </div>
+        <nav class="mt-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="index.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 bg-primary text-white">
+                        <i class="fas fa-tachometer-alt mr-3"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="books.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-book mr-3"></i>
+                        Quản Lý Sách
+                    </a>
+                </li>
+                <li>
+                    <a href="members.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-users mr-3"></i>
+                        Quản Lý Thành Viên
+                    </a>
+                </li>
+                <li>
+                    <a href="borrowing.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-hand-holding mr-3"></i>
+                        Mượn/Trả Sách
+                    </a>
+                </li>
+                <li>
+                    <a href="categories.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-tags mr-3"></i>
+                        Danh Mục
+                    </a>
+                </li>
+                <li>
+                    <a href="reports.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-chart-bar mr-3"></i>
+                        Báo Cáo
+                    </a>
+                </li>
+                <li class="border-t pt-2 mt-4">
+                    <a href="settings.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-cog mr-3"></i>
+                        Cài Đặt
+                    </a>
+                </li>
+                <li>
+                    <a href="profile.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-user mr-3"></i>
+                        Hồ Sơ
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64 min-h-screen">
+        <!-- Top Navigation -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="flex items-center justify-between px-6 py-4">
+                <div class="flex items-center">
+                    <button id="menuToggle" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-800 ml-3 lg:ml-0">Dashboard</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Search -->
+                    <div class="relative hidden md:block">
+                        <input type="text" placeholder="Tìm kiếm..." class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <!-- Notifications -->
+                    <button class="relative text-gray-600 hover:text-gray-900 focus:outline-none">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute -top-1 -right-1 bg-danger text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                    </button>
+                    <!-- User Menu -->
+                    <div class="relative">
+                        <button class="flex items-center text-gray-600 hover:text-gray-900 focus:outline-none">
+                            <img class="h-8 w-8 rounded-full object-cover" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="User">
+                            <span class="ml-2 font-medium">Admin</span>
+                            <i class="fas fa-chevron-down ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="p-6">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+                <!-- Total Books -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-primary">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wider">Tổng Số Sách</p>
+                            <p class="text-2xl font-bold text-gray-900">1,247</p>
+                            <p class="text-sm text-success">+12% so với tháng trước</p>
+                        </div>
+                        <div class="p-3 bg-primary bg-opacity-10 rounded-full">
+                            <i class="fas fa-book text-primary text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Members -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-success">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wider">Thành Viên</p>
+                            <p class="text-2xl font-bold text-gray-900">567</p>
+                            <p class="text-sm text-success">+8% so với tháng trước</p>
+                        </div>
+                        <div class="p-3 bg-success bg-opacity-10 rounded-full">
+                            <i class="fas fa-users text-success text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Borrowed Books -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-warning">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wider">Sách Đang Mượn</p>
+                            <p class="text-2xl font-bold text-gray-900">234</p>
+                            <p class="text-sm text-warning">+5% so với tuần trước</p>
+                        </div>
+                        <div class="p-3 bg-warning bg-opacity-10 rounded-full">
+                            <i class="fas fa-hand-holding text-warning text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overdue Books -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-danger">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wider">Sách Quá Hạn</p>
+                            <p class="text-2xl font-bold text-gray-900">23</p>
+                            <p class="text-sm text-danger">-3% so với tuần trước</p>
+                        </div>
+                        <div class="p-3 bg-danger bg-opacity-10 rounded-full">
+                            <i class="fas fa-exclamation-triangle text-danger text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Borrowing Chart -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Thống Kê Mượn Sách</h3>
+                        <select class="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option>7 ngày qua</option>
+                            <option>30 ngày qua</option>
+                            <option>3 tháng qua</option>
+                        </select>
+                    </div>
+                    <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                        <p class="text-gray-500">Biểu đồ thống kê mượn sách</p>
+                    </div>
+                </div>
+
+                <!-- Popular Books -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Sách Phổ Biến</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" 
+                                     alt="Book" class="w-12 h-16 object-cover rounded">
+                                <div class="ml-3">
+                                    <p class="font-medium text-gray-800">Lập Trình Web</p>
+                                    <p class="text-sm text-gray-600">Nguyễn Văn A</p>
+                                </div>
+                            </div>
+                            <span class="text-sm font-medium text-primary">45 lượt mượn</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" 
+                                     alt="Book" class="w-12 h-16 object-cover rounded">
+                                <div class="ml-3">
+                                    <p class="font-medium text-gray-800">Khoa Học Máy Tính</p>
+                                    <p class="text-sm text-gray-600">Trần Thị B</p>
+                                </div>
+                            </div>
+                            <span class="text-sm font-medium text-primary">38 lượt mượn</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" 
+                                     alt="Book" class="w-12 h-16 object-cover rounded">
+                                <div class="ml-3">
+                                    <p class="font-medium text-gray-800">Toán Học Ứng Dụng</p>
+                                    <p class="text-sm text-gray-600">Lê Văn C</p>
+                                </div>
+                            </div>
+                            <span class="text-sm font-medium text-primary">32 lượt mượn</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Recent Borrowings -->
+                <div class="lg:col-span-2 bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Hoạt Động Gần Đây</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left border-b">
+                                    <th class="pb-3 font-medium text-gray-600">Thành Viên</th>
+                                    <th class="pb-3 font-medium text-gray-600">Sách</th>
+                                    <th class="pb-3 font-medium text-gray-600">Hoạt Động</th>
+                                    <th class="pb-3 font-medium text-gray-600">Thời Gian</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr>
+                                    <td class="py-3">Nguyễn Văn A</td>
+                                    <td class="py-3">Lập Trình Java</td>
+                                    <td class="py-3">
+                                        <span class="px-2 py-1 bg-success bg-opacity-10 text-success rounded-full text-xs">Mượn</span>
+                                    </td>
+                                    <td class="py-3 text-gray-600">2 giờ trước</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3">Trần Thị B</td>
+                                    <td class="py-3">Cơ Sở Dữ Liệu</td>
+                                    <td class="py-3">
+                                        <span class="px-2 py-1 bg-primary bg-opacity-10 text-primary rounded-full text-xs">Trả</span>
+                                    </td>
+                                    <td class="py-3 text-gray-600">4 giờ trước</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3">Lê Văn C</td>
+                                    <td class="py-3">Mạng Máy Tính</td>
+                                    <td class="py-3">
+                                        <span class="px-2 py-1 bg-success bg-opacity-10 text-success rounded-full text-xs">Mượn</span>
+                                    </td>
+                                    <td class="py-3 text-gray-600">1 ngày trước</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Thao Tác Nhanh</h3>
+                    <div class="space-y-3">
+                        <button class="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary hover:bg-opacity-90 transition-colors duration-200 flex items-center justify-center">
+                            <i class="fas fa-plus mr-2"></i>
+                            Thêm Sách Mới
+                        </button>
+                        <button class="w-full bg-success text-white py-2 px-4 rounded-lg hover:bg-success hover:bg-opacity-90 transition-colors duration-200 flex items-center justify-center">
+                            <i class="fas fa-user-plus mr-2"></i>
+                            Đăng Ký Thành Viên
+                        </button>
+                        <button class="w-full bg-warning text-white py-2 px-4 rounded-lg hover:bg-warning hover:bg-opacity-90 transition-colors duration-200 flex items-center justify-center">
+                            <i class="fas fa-hand-holding mr-2"></i>
+                            Mượn Sách
+                        </button>
+                        <button class="w-full bg-info text-white py-2 px-4 rounded-lg hover:bg-info hover:bg-opacity-90 transition-colors duration-200 flex items-center justify-center">
+                            <i class="fas fa-undo mr-2"></i>
+                            Trả Sách
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+    <!-- JavaScript -->
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

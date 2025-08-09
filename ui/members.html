@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Thành Viên - Thư Viện</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5e72e4',
+                        secondary: '#8392ab',
+                        success: '#2dce89',
+                        info: '#11cdef',
+                        warning: '#fb6340',
+                        danger: '#f5365c',
+                        dark: '#212529'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed left-0 top-0 w-64 h-full bg-white shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out z-50">
+        <div class="p-4 border-b">
+            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-book text-primary mr-2"></i>
+                Quản Lý Thư Viện
+            </h2>
+        </div>
+        <nav class="mt-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="index.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-tachometer-alt mr-3"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="books.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-book mr-3"></i>
+                        Quản Lý Sách
+                    </a>
+                </li>
+                <li>
+                    <a href="members.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200 bg-primary text-white">
+                        <i class="fas fa-users mr-3"></i>
+                        Quản Lý Thành Viên
+                    </a>
+                </li>
+                <li>
+                    <a href="borrowing.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-hand-holding mr-3"></i>
+                        Mượn/Trả Sách
+                    </a>
+                </li>
+                <li>
+                    <a href="categories.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-tags mr-3"></i>
+                        Danh Mục
+                    </a>
+                </li>
+                <li>
+                    <a href="reports.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-chart-bar mr-3"></i>
+                        Báo Cáo
+                    </a>
+                </li>
+                <li class="border-t pt-2 mt-4">
+                    <a href="settings.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-cog mr-3"></i>
+                        Cài Đặt
+                    </a>
+                </li>
+                <li>
+                    <a href="profile.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-primary hover:text-white transition-colors duration-200">
+                        <i class="fas fa-user mr-3"></i>
+                        Hồ Sơ
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64 min-h-screen">
+        <!-- Top Navigation -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="flex items-center justify-between px-6 py-4">
+                <div class="flex items-center">
+                    <button id="menuToggle" class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-xl font-semibold text-gray-800 ml-3 lg:ml-0">Quản Lý Thành Viên</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative hidden md:block">
+                        <input type="text" placeholder="Tìm kiếm thành viên..." class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <button class="relative text-gray-600 hover:text-gray-900 focus:outline-none">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute -top-1 -right-1 bg-danger text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                    </button>
+                    <div class="relative">
+                        <button class="flex items-center text-gray-600 hover:text-gray-900 focus:outline-none">
+                            <img class="h-8 w-8 rounded-full object-cover" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="User">
+                            <span class="ml-2 font-medium">Admin</span>
+                            <i class="fas fa-chevron-down ml-1 text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Members Management Content -->
+        <main class="p-6">
+            <!-- Stats Row -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-primary">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wider">Tổng Thành Viên</p>
+                            <p class="text-2xl font-bold text-gray-900">567</p>
+                        </div>
+                        <div class="p-3 bg-primary bg-opacity-10 rounded-full">
+                            <i class="fas fa-users text-primary text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-success">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wider">Hoạt Động</p>
+                            <p class="text-2xl font-bold text-gray-900">234</p>
+                        </div>
+                        <div class="p-3 bg-success bg-opacity-10 rounded-full">
+                            <i class="fas fa-user-check text-success text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-warning">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wider">Mới Tháng Này</p>
+                            <p class="text-2xl font-bold text-gray-900">45</p>
+                        </div>
+                        <div class="p-3 bg-warning bg-opacity-10 rounded-full">
+                            <i class="fas fa-user-plus text-warning text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-danger">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600 uppercase tracking-wider">Quá Hạn</p>
+                            <p class="text-2xl font-bold text-gray-900">12</p>
+                        </div>
+                        <div class="p-3 bg-danger bg-opacity-10 rounded-full">
+                            <i class="fas fa-user-times text-danger text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="mb-6 bg-white rounded-lg shadow-sm p-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                    <div class="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
+                        <button id="addMemberBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary hover:bg-opacity-90 transition-colors duration-200 flex items-center">
+                            <i class="fas fa-user-plus mr-2"></i>
+                            Thêm Thành Viên
+                        </button>
+                        <button class="bg-success text-white px-4 py-2 rounded-lg hover:bg-success hover:bg-opacity-90 transition-colors duration-200 flex items-center">
+                            <i class="fas fa-file-import mr-2"></i>
+                            Import Excel
+                        </button>
+                        <button class="bg-info text-white px-4 py-2 rounded-lg hover:bg-info hover:bg-opacity-90 transition-colors duration-200 flex items-center">
+                            <i class="fas fa-file-export mr-2"></i>
+                            Export Excel
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <select class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="active">Hoạt động</option>
+                            <option value="inactive">Không hoạt động</option>
+                            <option value="suspended">Tạm khóa</option>
+                        </select>
+                        <select class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="">Loại thành viên</option>
+                            <option value="student">Sinh viên</option>
+                            <option value="teacher">Giảng viên</option>
+                            <option value="staff">Nhân viên</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Members Table -->
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b">
+                    <h3 class="text-lg font-semibold text-gray-800">Danh Sách Thành Viên</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thành viên</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã thành viên</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loại</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Liên hệ</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày tham gia</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <img class="h-10 w-10 rounded-full object-cover" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Member">
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">Nguyễn Văn A</div>
+                                            <div class="text-sm text-gray-500">nguyenvana@email.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">LIB001</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-primary bg-opacity-10 text-primary">
+                                        Sinh viên
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">0123456789</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">15/01/2024</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-success bg-opacity-10 text-success">
+                                        Hoạt động
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex space-x-2">
+                                        <button class="text-primary hover:text-primary hover:opacity-80" title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="text-warning hover:text-warning hover:opacity-80" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-info hover:text-info hover:opacity-80" title="Lịch sử mượn">
+                                            <i class="fas fa-history"></i>
+                                        </button>
+                                        <button class="text-danger hover:text-danger hover:opacity-80" title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <img class="h-10 w-10 rounded-full object-cover" src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Member">
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">Trần Thị B</div>
+                                            <div class="text-sm text-gray-500">tranthib@email.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">LIB002</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-success bg-opacity-10 text-success">
+                                        Giảng viên
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">0987654321</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">20/02/2024</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-success bg-opacity-10 text-success">
+                                        Hoạt động
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex space-x-2">
+                                        <button class="text-primary hover:text-primary hover:opacity-80" title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="text-warning hover:text-warning hover:opacity-80" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-info hover:text-info hover:opacity-80" title="Lịch sử mượn">
+                                            <i class="fas fa-history"></i>
+                                        </button>
+                                        <button class="text-danger hover:text-danger hover:opacity-80" title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary">
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <img class="h-10 w-10 rounded-full object-cover" src="https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Member">
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">Lê Văn C</div>
+                                            <div class="text-sm text-gray-500">levanc@email.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">LIB003</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-warning bg-opacity-10 text-warning">
+                                        Nhân viên
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">0555666777</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">10/03/2024</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-danger bg-opacity-10 text-danger">
+                                        Tạm khóa
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex space-x-2">
+                                        <button class="text-primary hover:text-primary hover:opacity-80" title="Xem chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="text-warning hover:text-warning hover:opacity-80" title="Chỉnh sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="text-info hover:text-info hover:opacity-80" title="Lịch sử mượn">
+                                            <i class="fas fa-history"></i>
+                                        </button>
+                                        <button class="text-danger hover:text-danger hover:opacity-80" title="Xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                    <div class="flex-1 flex justify-between sm:hidden">
+                        <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Trước
+                        </button>
+                        <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Sau
+                        </button>
+                    </div>
+                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700">
+                                Hiển thị <span class="font-medium">1</span> đến <span class="font-medium">10</span> của
+                                <span class="font-medium">567</span> kết quả
+                            </p>
+                        </div>
+                        <div>
+                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                <button class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="bg-primary border-primary text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    1
+                                </button>
+                                <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    2
+                                </button>
+                                <button class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                    3
+                                </button>
+                                <button class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div id="addMemberModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Thêm Thành Viên Mới</h3>
+                    <button id="closeMemberModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Họ và tên *</label>
+                            <input type="text" required class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Email *</label>
+                            <input type="email" required class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                            <input type="tel" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Loại thành viên *</label>
+                            <select required class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="">Chọn loại thành viên</option>
+                                <option value="student">Sinh viên</option>
+                                <option value="teacher">Giảng viên</option>
+                                <option value="staff">Nhân viên</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Ngày sinh</label>
+                            <input type="date" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Giới tính</label>
+                            <select class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="">Chọn giới tính</option>
+                                <option value="male">Nam</option>
+                                <option value="female">Nữ</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Địa chỉ</label>
+                        <textarea rows="2" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Ảnh đại diện</label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                            <div class="space-y-1 text-center">
+                                <i class="fas fa-user-circle text-3xl text-gray-400"></i>
+                                <div class="flex text-sm text-gray-600">
+                                    <label class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary hover:opacity-80 focus-within:outline-none">
+                                        <span>Tải lên ảnh</span>
+                                        <input type="file" class="sr-only" accept="image/*">
+                                    </label>
+                                    <p class="pl-1">hoặc kéo thả</p>
+                                </div>
+                                <p class="text-xs text-gray-500">PNG, JPG, GIF tối đa 2MB</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" id="cancelMemberBtn" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            Hủy
+                        </button>
+                        <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            Thêm Thành Viên
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+    <!-- JavaScript -->
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Modal functionality
+        const addMemberBtn = document.getElementById('addMemberBtn');
+        const addMemberModal = document.getElementById('addMemberModal');
+        const closeMemberModal = document.getElementById('closeMemberModal');
+        const cancelMemberBtn = document.getElementById('cancelMemberBtn');
+
+        addMemberBtn.addEventListener('click', () => {
+            addMemberModal.classList.remove('hidden');
+        });
+
+        closeMemberModal.addEventListener('click', () => {
+            addMemberModal.classList.add('hidden');
+        });
+
+        cancelMemberBtn.addEventListener('click', () => {
+            addMemberModal.classList.add('hidden');
+        });
+
+        // Close modal when clicking outside
+        addMemberModal.addEventListener('click', (e) => {
+            if (e.target === addMemberModal) {
+                addMemberModal.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
