@@ -33,6 +33,9 @@ try {
     $whereConditions = [];
     $params = [];
     
+    // Luôn lọc sách chưa bị xóa
+    $whereConditions[] = "IsDeleted = 0";
+    
     if (!empty($search)) {
         $whereConditions[] = "(Title LIKE ? OR Author LIKE ? OR ISBN LIKE ?)";
         $searchParam = "%{$search}%";
@@ -84,23 +87,24 @@ try {
     $hasNextPage = $page < $totalPages;
     $hasPrevPage = $page > 1;
     
-    // Thống kê tổng quan
+    // Thống kê tổng quan (chỉ tính sách chưa bị xóa)
     $statsSql = "SELECT 
                     COUNT(*) as total_books,
                     SUM(Quantity) as total_copies,
                     COUNT(DISTINCT CategoryID) as total_categories,
                     AVG(Quantity) as avg_quantity_per_book
-                 FROM books";
+                 FROM books WHERE IsDeleted = 0";
     $statsStmt = $conn->prepare($statsSql);
     $statsStmt->execute();
     $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
     
-    // Thống kê theo danh mục
+    // Thống kê theo danh mục (chỉ tính sách chưa bị xóa)
     $categorySql = "SELECT 
                         CategoryID,
                         COUNT(*) as book_count,
                         SUM(Quantity) as total_copies
                     FROM books 
+                    WHERE IsDeleted = 0
                     GROUP BY CategoryID 
                     ORDER BY book_count DESC";
     $categoryStmt = $conn->prepare($categorySql);

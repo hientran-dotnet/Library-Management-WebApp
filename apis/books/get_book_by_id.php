@@ -36,17 +36,18 @@ try {
                 Quantity,
                 Description,
                 ImagePath,
+                IsDeleted,
                 CreatedAt,
                 UpdatedAt
             FROM books 
-            WHERE BookID = ?";
+            WHERE BookID = ? AND IsDeleted = 0";
     
     $stmt = $conn->prepare($sql);
     $stmt->execute([$bookId]);
     $book = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$book) {
-        throw new Exception('Không tìm thấy sách với ID: ' . $bookId);
+        throw new Exception('Không tìm thấy sách với ID: ' . $bookId . ' hoặc sách đã bị xóa');
     }
     
     http_response_code(200);
