@@ -39,6 +39,18 @@ let currentPage = 1;
 let currentSearch = '';
 let currentCategory = '';
 
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
 // Category mapping
 const categoryNames = {
     1: 'Công nghệ',
@@ -146,7 +158,7 @@ function renderBooksTable(books) {
                     <button class="edit-book-btn text-warning hover:text-warning hover:opacity-80" title="Chỉnh sửa" data-book-id="${book.BookID}">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="text-danger hover:text-danger hover:opacity-80" title="Xóa">
+                    <button class="delete-book-btn text-danger hover:text-danger hover:opacity-80" title="Xóa" data-book-id="${book.BookID}" data-book-title="${escapeHtml(book.Title)}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -281,6 +293,14 @@ function addEditEventListeners() {
             const bookId = e.target.closest('.edit-book-btn').getAttribute('data-book-id');
             if (bookId) {
                 loadBookForEdit(bookId);
+            }
+        }
+        
+        if (e.target.closest('.delete-book-btn')) {
+            const bookId = e.target.closest('.delete-book-btn').getAttribute('data-book-id');
+            const bookTitle = e.target.closest('.delete-book-btn').getAttribute('data-book-title');
+            if (bookId) {
+                deleteBook(bookId, bookTitle);
             }
         }
     });
@@ -546,4 +566,266 @@ async function bulkUpdateCategory(bookIds, categoryId) {
         console.error('Error updating category:', error);
         showNotification('Có lỗi xảy ra khi cập nhật danh mục: ' + error.message, 'error');
     }
+}
+
+// Delete single book (soft delete)
+async function deleteBook(bookId, bookTitle) {
+    try {
+        // Confirm deletion
+        const confirmed = confirm(`Bạn có chắc chắn muốn xóa sách "${bookTitle}"?\n\nLưu ý: Sách sẽ được ẩn đi và có thể khôi phục sau này.`);
+        if (!confirmed) {
+            return;
+        }
+        
+        showNotification('Đang xóa sách...', 'info');
+        
+        const response = await fetch(`../apis/books/delete_book.php?id=${bookId}`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification(result.message, 'success');
+            loadBooks(); // Reload the books list
+        } else {
+            throw new Error(result.message);
+        }
+        
+    } catch (error) {
+        console.error('Error deleting book:', error);
+        showNotification('Có lỗi xảy ra khi xóa sách: ' + error.message, 'error');
+    }
+}
+
+// Deleted Books Modal Management
+let deletedBooksCurrentPage = 1;
+let deletedBooksCurrentSearch = '';
+
+// Initialize deleted books modal
+function initDeletedBooksModal() {
+    const viewDeletedBooksBtn = document.getElementById('viewDeletedBooksBtn');
+    const deletedBooksModal = document.getElementById('deletedBooksModal');
+    const closeDeletedBooksModal = document.getElementById('closeDeletedBooksModal');
+    const deletedBooksSearch = document.getElementById('deletedBooksSearch');
+    const deletedBooksPrevBtn = document.getElementById('deletedBooksPrevBtn');
+    const deletedBooksNextBtn = document.getElementById('deletedBooksNextBtn');
+    
+    if (viewDeletedBooksBtn) {
+        viewDeletedBooksBtn.addEventListener('click', function() {
+            openDeletedBooksModal();
+        });
+    }
+    
+    if (closeDeletedBooksModal) {
+        closeDeletedBooksModal.addEventListener('click', function() {
+            deletedBooksModal.classList.add('hidden');
+        });
+    }
+    
+    // Close modal when clicking outside
+    if (deletedBooksModal) {
+        deletedBooksModal.addEventListener('click', function(e) {
+            if (e.target === deletedBooksModal) {
+                deletedBooksModal.classList.add('hidden');
+            }
+        });
+    }
+    
+    // Search functionality
+    if (deletedBooksSearch) {
+        deletedBooksSearch.addEventListener('input', function() {
+            deletedBooksCurrentSearch = this.value;
+            deletedBooksCurrentPage = 1;
+            // Use setTimeout instead of debounce for now
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(() => {
+                loadDeletedBooks();
+            }, 300);
+        });
+    }
+    
+    // Pagination
+    if (deletedBooksPrevBtn) {
+        deletedBooksPrevBtn.addEventListener('click', function() {
+            if (deletedBooksCurrentPage > 1) {
+                deletedBooksCurrentPage--;
+                loadDeletedBooks();
+            }
+        });
+    }
+    
+    if (deletedBooksNextBtn) {
+        deletedBooksNextBtn.addEventListener('click', function() {
+            deletedBooksCurrentPage++;
+            loadDeletedBooks();
+        });
+    }
+    
+    // Event delegation for restore buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.restore-book-btn')) {
+            const bookId = e.target.closest('.restore-book-btn').getAttribute('data-book-id');
+            const bookTitle = e.target.closest('.restore-book-btn').getAttribute('data-book-title');
+            if (bookId) {
+                restoreBook(bookId, bookTitle);
+            }
+        }
+    });
+}
+
+// Open deleted books modal
+function openDeletedBooksModal() {
+    const deletedBooksModal = document.getElementById('deletedBooksModal');
+    if (deletedBooksModal) {
+        deletedBooksModal.classList.remove('hidden');
+        deletedBooksCurrentPage = 1;
+        deletedBooksCurrentSearch = '';
+        const searchInput = document.getElementById('deletedBooksSearch');
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        loadDeletedBooks();
+    }
+}
+
+// Load deleted books
+async function loadDeletedBooks() {
+    try {
+        const params = {
+            page: deletedBooksCurrentPage,
+            limit: 10,
+            search: deletedBooksCurrentSearch
+        };
+        
+        const result = await ApiHelper.get('/books/get_deleted_books.php', params);
+        
+        if (result.success) {
+            renderDeletedBooksTable(result.data.books);
+            updateDeletedBooksPagination(result.data.pagination);
+            updateDeletedBooksStats(result.data.stats);
+        } else {
+            showNotification('❌ Lỗi!', result.message, 'error');
+        }
+    } catch (error) {
+        showNotification('❌ Lỗi kết nối!', 'Không thể tải dữ liệu sách đã xóa', 'error');
+        console.error('Error loading deleted books:', error);
+    }
+}
+
+// Render deleted books table
+function renderDeletedBooksTable(books) {
+    const tableBody = document.getElementById('deletedBooksTableBody');
+    
+    if (!books || books.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                    <i class="fas fa-smile text-3xl mb-2"></i>
+                    <p>Không có sách nào bị xóa</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tableBody.innerHTML = books.map(book => `
+        <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <img class="h-12 w-8 object-cover rounded opacity-60" 
+                         src="${book.ImagePath || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80'}" 
+                         alt="Book" 
+                         onerror="this.src='https://images.unsplash.com/photo-1544947950-fa07a98d237f?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80'">
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-600">${book.Title}</div>
+                        <div class="text-sm text-gray-400">${book.PublishYear || 'N/A'}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${book.Author}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
+                    ${categoryNames[book.CategoryID] || 'Khác'}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${book.Quantity}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${formatDateTime(book.UpdatedAt)}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <button class="restore-book-btn text-green-600 hover:text-green-800" title="Khôi phục" 
+                        data-book-id="${book.BookID}" data-book-title="${book.Title}">
+                    <i class="fas fa-trash-restore mr-1"></i>
+                    Khôi phục
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Update deleted books pagination
+function updateDeletedBooksPagination(pagination) {
+    const prevBtn = document.getElementById('deletedBooksPrevBtn');
+    const nextBtn = document.getElementById('deletedBooksNextBtn');
+    const fromSpan = document.getElementById('deletedBooksFrom');
+    const toSpan = document.getElementById('deletedBooksTo');
+    const totalSpan = document.getElementById('deletedBooksTotal');
+    
+    if (prevBtn) prevBtn.disabled = !pagination.has_prev;
+    if (nextBtn) nextBtn.disabled = !pagination.has_next;
+    
+    const from = (pagination.current_page - 1) * pagination.limit + 1;
+    const to = Math.min(pagination.current_page * pagination.limit, pagination.total_items);
+    
+    if (fromSpan) fromSpan.textContent = pagination.total_items > 0 ? from : 0;
+    if (toSpan) toSpan.textContent = to;
+    if (totalSpan) totalSpan.textContent = pagination.total_items;
+}
+
+// Update deleted books stats
+function updateDeletedBooksStats(stats) {
+    const countSpan = document.getElementById('deletedBooksCount');
+    if (countSpan) {
+        countSpan.textContent = `${stats.total_deleted_books} sách đã xóa`;
+    }
+}
+
+// Restore book
+async function restoreBook(bookId, bookTitle) {
+    try {
+        // Confirm restoration
+        const confirmed = confirm(`Bạn có chắc chắn muốn khôi phục sách "${bookTitle}"?`);
+        if (!confirmed) {
+            return;
+        }
+        
+        showNotification('Đang khôi phục sách...', 'info');
+        
+        const response = await fetch(`../apis/books/restore_book.php?id=${bookId}`, {
+            method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification(result.message, 'success');
+            loadDeletedBooks(); // Reload deleted books list
+            loadBooks(); // Reload main books list
+        } else {
+            throw new Error(result.message);
+        }
+        
+    } catch (error) {
+        console.error('Error restoring book:', error);
+        showNotification('Có lỗi xảy ra khi khôi phục sách: ' + error.message, 'error');
+    }
+}
+
+// Format datetime helper
+function formatDateTime(dateTimeString) {
+    if (!dateTimeString) return 'N/A';
+    const date = new Date(dateTimeString);
+    return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
 }
