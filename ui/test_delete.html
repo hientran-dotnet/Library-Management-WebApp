@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Delete Book API</title>
+</head>
+<body>
+    <h1>Test Delete Book API</h1>
+    <button onclick="testDeleteBook()">Test Delete Book ID 3</button>
+    <div id="result"></div>
+
+    <script>
+    async function testDeleteBook() {
+        try {
+            const response = await fetch('../apis/books/delete_book.php?id=3', {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            console.log('Response:', result);
+            document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('result').innerHTML = 'Error: ' + error.message;
+        }
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple Buttons</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="p-8">
+    <h1 class="text-2xl mb-4">Test Simple Version</h1>
+    
+    <div class="space-y-4">
+        <button id="viewDeletedBooksBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center">
+            <i class="fas fa-trash-restore mr-2"></i>
+            Sách Đã Xóa
+        </button>
+        
+        <div id="test-buttons">
+            <button class="delete-book-btn bg-red-500 text-white px-3 py-1 rounded mr-2" data-book-id="123" data-book-title="Test Book 1">
+                <i class="fas fa-trash mr-1"></i>
+                Xóa Test 1
+            </button>
+            <button class="delete-book-btn bg-red-500 text-white px-3 py-1 rounded" data-book-id="456" data-book-title="Test Book 2">
+                <i class="fas fa-trash mr-1"></i>
+                Xóa Test 2
+            </button>
+        </div>
+    </div>
+    
+    <div id="result" class="mt-4 p-4 bg-gray-100 rounded"></div>
+
+    <!-- Simple Modal -->
+    <div id="deletedBooksModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+            <div class="flex items-center justify-between pb-3 border-b">
+                <h3 class="text-lg font-medium text-gray-900">Sách Đã Xóa (Test)</h3>
+                <button id="closeDeletedBooksModal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="mt-4">
+                <p>This is a test modal for deleted books.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Simple test page loaded');
+        
+        const result = document.getElementById('result');
+        
+        // Test view deleted books button
+        const viewDeletedBooksBtn = document.getElementById('viewDeletedBooksBtn');
+        if (viewDeletedBooksBtn) {
+            console.log('Found viewDeletedBooksBtn');
+            viewDeletedBooksBtn.addEventListener('click', function() {
+                console.log('View deleted books clicked');
+                result.innerHTML += '<p>✅ View deleted books button works!</p>';
+                
+                // Open modal
+                const modal = document.getElementById('deletedBooksModal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
+            });
+        }
+        
+        // Test close modal
+        const closeModal = document.getElementById('closeDeletedBooksModal');
+        if (closeModal) {
+            closeModal.addEventListener('click', function() {
+                const modal = document.getElementById('deletedBooksModal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
+        
+        // Test delete buttons with event delegation
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.delete-book-btn')) {
+                console.log('Delete button clicked');
+                const btn = e.target.closest('.delete-book-btn');
+                const bookId = btn.getAttribute('data-book-id');
+                const bookTitle = btn.getAttribute('data-book-title');
+                
+                result.innerHTML += `<p>✅ Delete button works! ID: ${bookId}, Title: ${bookTitle}</p>`;
+                
+                // Simulate delete
+                if (confirm(`Delete "${bookTitle}"?`)) {
+                    result.innerHTML += '<p>✅ Delete confirmed!</p>';
+                }
+            }
+        });
+    });
+    </script>
+</body>
+</html>
