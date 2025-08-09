@@ -1,5 +1,7 @@
 // Initialize page functionality
 function initializePage() {
+    console.log('Initializing page...');
+    
     // Load initial data
     loadBooks();
     
@@ -15,11 +17,33 @@ function initializePage() {
     // Initialize edit form handlers
     initializeEditBookForm();
     
-    // Add edit event listeners
+    // Add edit and delete event listeners
     addEditEventListeners();
     
     // Initialize select all functionality
     initSelectAllBooks();
+    
+    // Initialize deleted books modal
+    initDeletedBooksModal();
+    
+    console.log('Page initialization complete');
+    
+    // Manual test for Add Book button
+    setTimeout(() => {
+        const testBtn = document.getElementById('addBookBtn');
+        if (testBtn) {
+            console.log('Manual test: Add Book button found');
+            testBtn.onclick = function(e) {
+                console.log('Manual onclick triggered!');
+                const modal = document.getElementById('addBookModal');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
+            };
+        } else {
+            console.error('Manual test: Add Book button NOT found');
+        }
+    }, 1000);
     
     // Add search event listener
     const searchInput = document.querySelector('input[placeholder="Tìm kiếm sách..."]');
@@ -58,5 +82,6 @@ function initializePage() {
 
 // DOM Content Loaded Event
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - Starting initialization...');
     initializePage();
 });
