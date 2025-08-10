@@ -33,8 +33,10 @@ RUN echo "ServerName localhost" > /etc/apache2/conf-available/servername.conf &&
     a2enconf servername && \
     a2ensite 000-default
 
-# Create simple health check
-RUN echo "OK" > /var/www/html/health.txt
+# Create simple health checks at multiple locations
+RUN echo "OK" > /var/www/html/health.txt && \
+    echo "OK" > /var/www/html/ui/health.txt && \
+    cp /var/www/html/health.php /var/www/html/ui/health.php
 
 # Set working directory
 WORKDIR /var/www/html
