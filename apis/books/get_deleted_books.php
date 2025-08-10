@@ -30,7 +30,7 @@ try {
     $offset = ($page - 1) * $limit;
     
     // Xây dựng câu truy vấn với WHERE conditions
-    $whereConditions = ["IsDeleted = 1"]; // Chỉ lấy sách đã bị xóa
+    $whereConditions = ["Status = 'deleted'"]; // Chỉ lấy sách đã bị xóa
     $params = [];
     
     if (!empty($search)) {
@@ -63,6 +63,7 @@ try {
                 Quantity,
                 Description,
                 ImagePath,
+                Status,
                 CreatedAt,
                 UpdatedAt
             FROM books 
@@ -79,7 +80,7 @@ try {
                     COUNT(*) as total_deleted_books,
                     SUM(Quantity) as total_deleted_copies,
                     COUNT(DISTINCT CategoryID) as deleted_categories
-                 FROM books WHERE IsDeleted = 1";
+                 FROM books WHERE Status = 'deleted'";
     $statsStmt = $conn->prepare($statsSql);
     $statsStmt->execute();
     $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);

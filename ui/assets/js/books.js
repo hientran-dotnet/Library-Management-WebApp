@@ -80,6 +80,528 @@ window.testNotification = function() {
     showNotification('🧪 Test!', 'Đây là test notification sử dụng showNotification()', 'info');
 };
 
+// CSV Import functionality
+function initCsvImport() {
+    console.log('Initializing CSV Import...');
+    
+    try {
+        const importCsvBtn = document.getElementById('importCsvBtn');
+        const importCsvModal = document.getElementById('importCsvModal');
+        const closeImportCsvModal = document.getElementById('closeImportCsvModal');
+        const cancelImportBtn = document.getElementById('cancelImportBtn');
+        const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
+        const csvFileInput = document.getElementById('csvFileInput');
+        const startImportBtn = document.getElementById('startImportBtn');
+        
+        console.log('Import CSV Button:', importCsvBtn);
+        console.log('Import CSV Modal:', importCsvModal);
+        
+        if (importCsvBtn) {
+            console.log('Adding click event to Import CSV button');
+            importCsvBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Import CSV button clicked!');
+                openImportCsvModal();
+            });
+        } else {
+            console.error('Import CSV button not found!');
+        }
+        
+        if (closeImportCsvModal) {
+            closeImportCsvModal.addEventListener('click', function() {
+                closeImportModal();
+            });
+        }
+        
+        if (cancelImportBtn) {
+            cancelImportBtn.addEventListener('click', function() {
+                closeImportModal();
+            });
+        }
+        
+        if (downloadTemplateBtn) {
+            downloadTemplateBtn.addEventListener('click', function() {
+                downloadCsvTemplate();
+            });
+        }
+        
+        if (csvFileInput) {
+            csvFileInput.addEventListener('change', function(e) {
+                handleFileSelect(e);
+            });
+        }
+        
+        if (startImportBtn) {
+            startImportBtn.addEventListener('click', function() {
+                startCsvImport();
+            });
+        }
+        
+        // Drag and drop functionality
+        const dropZone = document.querySelector('.border-dashed');
+        if (dropZone) {
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('border-primary', 'bg-blue-50');
+            });
+            
+            dropZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('border-primary', 'bg-blue-50');
+            });
+            
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('border-primary', 'bg-blue-50');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    csvFileInput.files = files;
+                    handleFileSelect({ target: { files: files } });
+                }
+            });
+        }
+        
+        console.log('CSV Import initialization completed successfully');
+        
+    } catch (error) {
+        console.error('Error initializing CSV Import:', error);
+    }
+}
+
+function openImportCsvModal() {
+    console.log('Opening Import CSV Modal...');
+    const modal = document.getElementById('importCsvModal');
+    console.log('Modal element:', modal);
+    if (modal) {
+        modal.classList.remove('hidden');
+        resetImportModal();
+        console.log('Modal opened successfully');
+    } else {
+        console.error('Import CSV Modal not found!');
+    }
+}
+
+function closeImportModal() {
+    const modal = document.getElementById('importCsvModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        resetImportModal();
+    }
+}
+
+function resetImportModal() {
+    // Reset file input
+    const csvFileInput = document.getElementById('csvFileInput');
+    if (csvFileInput) {
+        csvFileInput.value = '';
+    }
+    
+    // Hide sections
+    const sections = ['selectedFileName', 'csvPreview', 'importOptions', 'importStatus'];
+    sections.forEach(sectionId => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.classList.add('hidden');
+        }
+    });
+    
+    // Reset button
+    const startImportBtn = document.getElementById('startImportBtn');
+    if (startImportBtn) {
+        startImportBtn.disabled = true;
+        startImportBtn.innerHTML = '<i class="fas fa-upload mr-2"></i>Bắt đầu Import';
+    }
+    
+    // Reset progress
+    const progressBar = document.getElementById('importProgressBar');
+    const progressText = document.getElementById('importProgress');
+    if (progressBar) progressBar.style.width = '0%';
+    if (progressText) progressText.textContent = '0%';
+}
+
+function downloadCsvTemplate() {
+    window.open('../apis/books/download_template.php', '_blank');
+}
+
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+        showNotification('❌ Lỗi file!', 'Chỉ chấp nhận file CSV', 'error');
+        return;
+    }
+    
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        showNotification('❌ File quá lớn!', 'Kích thước file không được vượt quá 5MB', 'error');
+        return;
+    }
+    
+    // Show selected file name
+    const selectedFileName = document.getElementById('selectedFileName');
+    if (selectedFileName) {
+        selectedFileName.textContent = `Đã chọn: ${file.name} (${formatFileSize(file.size)})`;
+        selectedFileName.classList.remove('hidden');
+    }
+    
+    // Read and preview file
+    previewCsvFile(file);
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function previewCsvFile(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const csv = e.target.result;
+        const lines = csv.split('\n');
+        
+        if (lines.length < 2) {
+            showNotification('❌ File CSV trống!', 'File CSV phải có ít nhất 2 dòng dữ liệu', 'error');
+            return;
+        }
+        
+        // Parse first 6 lines for preview
+        const previewLines = lines.slice(0, 6).filter(line => line.trim());
+        const data = previewLines.map(line => parseCSVLine(line));
+        
+        if (data.length === 0) {
+            showNotification('❌ Lỗi đọc file!', 'Không thể đọc dữ liệu từ file CSV', 'error');
+            return;
+        }
+        
+        displayCsvPreview(data);
+        
+        // Show import options
+        const importOptions = document.getElementById('importOptions');
+        if (importOptions) {
+            importOptions.classList.remove('hidden');
+        }
+        
+        // Enable import button
+        const startImportBtn = document.getElementById('startImportBtn');
+        if (startImportBtn) {
+            startImportBtn.disabled = false;
+        }
+    };
+    
+    reader.readAsText(file, 'UTF-8');
+}
+
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    result.push(current.trim());
+    return result;
+}
+
+function displayCsvPreview(data) {
+    const previewSection = document.getElementById('csvPreview');
+    const previewTable = document.getElementById('previewTable');
+    
+    if (!previewSection || !previewTable) return;
+    
+    // Clear existing content
+    previewTable.innerHTML = '';
+    
+    // Create header
+    const thead = document.createElement('thead');
+    thead.className = 'bg-gray-50';
+    const headerRow = document.createElement('tr');
+    
+    const expectedHeaders = ['Title', 'Author', 'CategoryID', 'ISBN', 'Quantity', 'PublishYear', 'Description', 'ImagePath'];
+    expectedHeaders.forEach(header => {
+        const th = document.createElement('th');
+        th.className = 'px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+        th.textContent = header;
+        headerRow.appendChild(th);
+    });
+    
+    thead.appendChild(headerRow);
+    previewTable.appendChild(thead);
+    
+    // Create body
+    const tbody = document.createElement('tbody');
+    tbody.className = 'bg-white divide-y divide-gray-200';
+    
+    // Skip first row if it looks like header
+    const startIndex = isHeaderRow(data[0]) ? 1 : 0;
+    const previewData = data.slice(startIndex, startIndex + 5);
+    
+    previewData.forEach(row => {
+        const tr = document.createElement('tr');
+        
+        for (let i = 0; i < 8; i++) {
+            const td = document.createElement('td');
+            td.className = 'px-3 py-2 whitespace-nowrap text-sm text-gray-900';
+            td.textContent = row[i] || '';
+            tr.appendChild(td);
+        }
+        
+        tbody.appendChild(tr);
+    });
+    
+    previewTable.appendChild(tbody);
+    previewSection.classList.remove('hidden');
+}
+
+function isHeaderRow(row) {
+    if (!row || row.length === 0) return false;
+    
+    const headerKeywords = ['title', 'author', 'category', 'isbn', 'quantity', 'year'];
+    const firstCell = row[0].toLowerCase();
+    
+    return headerKeywords.some(keyword => firstCell.includes(keyword));
+}
+
+async function startCsvImport() {
+    const csvFileInput = document.getElementById('csvFileInput');
+    const file = csvFileInput.files[0];
+    
+    if (!file) {
+        showNotification('❌ Lỗi!', 'Vui lòng chọn file CSV', 'error');
+        return;
+    }
+    
+    // Get options
+    const skipFirstRow = document.getElementById('skipFirstRow').checked;
+    const validateData = document.getElementById('validateData').checked;
+    const skipDuplicates = document.getElementById('skipDuplicates').checked;
+    
+    // Show import status
+    const importStatus = document.getElementById('importStatus');
+    if (importStatus) {
+        importStatus.classList.remove('hidden');
+    }
+    
+    // Disable import button
+    const startImportBtn = document.getElementById('startImportBtn');
+    if (startImportBtn) {
+        startImportBtn.disabled = true;
+        startImportBtn.innerHTML = '<div class="loading-spinner"></div> Đang import...';
+    }
+    
+    try {
+        // Update progress
+        updateImportProgress(10, 'Chuẩn bị upload file...');
+        
+        // Create form data
+        const formData = new FormData();
+        formData.append('csvFile', file);
+        formData.append('skipFirstRow', skipFirstRow);
+        formData.append('validateData', validateData);
+        formData.append('skipDuplicates', skipDuplicates);
+        
+        updateImportProgress(30, 'Đang upload file...');
+        
+        // Upload and import
+        const response = await fetch('../apis/books/import_csv.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        updateImportProgress(70, 'Đang xử lý dữ liệu...');
+        
+        const result = await response.json();
+        
+        updateImportProgress(100, 'Hoàn thành!');
+        
+        if (result.success) {
+            showImportResults(result);
+        } else {
+            throw new Error(result.message);
+        }
+        
+    } catch (error) {
+        console.error('Import error:', error);
+        showNotification('❌ Lỗi import!', 'Có lỗi xảy ra: ' + error.message, 'error');
+        
+        // Reset button
+        if (startImportBtn) {
+            startImportBtn.disabled = false;
+            startImportBtn.innerHTML = '<i class="fas fa-upload mr-2"></i>Bắt đầu Import';
+        }
+    }
+}
+
+function updateImportProgress(percent, message) {
+    const progressBar = document.getElementById('importProgressBar');
+    const progressText = document.getElementById('importProgress');
+    const importDetails = document.getElementById('importDetails');
+    
+    if (progressBar) {
+        progressBar.style.width = percent + '%';
+    }
+    
+    if (progressText) {
+        progressText.textContent = percent + '%';
+    }
+    
+    if (importDetails) {
+        importDetails.textContent = message;
+    }
+}
+
+function showImportResults(result) {
+    const { data, details } = result;
+    
+    // Close modal after a short delay
+    setTimeout(() => {
+        closeImportModal();
+        
+        // Reload books list
+        loadBooks();
+        
+        // Show success notification
+        showNotification(
+            '✅ Import thành công!', 
+            `Đã import ${data.successCount}/${data.totalProcessed} sách. ${data.errorCount > 0 ? `${data.errorCount} lỗi, ` : ''}${data.duplicateCount > 0 ? `${data.duplicateCount} trùng lặp` : ''}`,
+            data.errorCount > 0 ? 'warning' : 'success'
+        );
+        
+        // Show detailed results if there are issues
+        if (details && (details.validationErrors?.length > 0 || details.duplicates?.length > 0 || details.importErrors?.length > 0)) {
+            console.log('Import details:', details);
+        }
+        
+    }, 2000);
+}
+
+// Archive Book Functions
+let currentArchiveBookId = null;
+
+function initArchiveFunctionality() {
+    // Event delegation for archive buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.archive-book-btn')) {
+            const btn = e.target.closest('.archive-book-btn');
+            const bookId = btn.getAttribute('data-book-id');
+            const bookTitle = btn.getAttribute('data-book-title');
+            showArchiveConfirmModal(bookId, bookTitle);
+        }
+    });
+    
+    // Archive modal buttons
+    const cancelArchiveBtn = document.getElementById('cancelArchiveBtn');
+    const confirmArchiveBtn = document.getElementById('confirmArchiveBtn');
+    
+    if (cancelArchiveBtn) {
+        cancelArchiveBtn.addEventListener('click', closeArchiveModal);
+    }
+    
+    if (confirmArchiveBtn) {
+        confirmArchiveBtn.addEventListener('click', confirmArchiveBook);
+    }
+    
+    // Close modal when clicking outside
+    const archiveModal = document.getElementById('archiveConfirmModal');
+    if (archiveModal) {
+        archiveModal.addEventListener('click', function(e) {
+            if (e.target === archiveModal) {
+                closeArchiveModal();
+            }
+        });
+    }
+}
+
+function showArchiveConfirmModal(bookId, bookTitle) {
+    currentArchiveBookId = bookId;
+    
+    const modal = document.getElementById('archiveConfirmModal');
+    const titleElement = document.getElementById('archiveBookTitle');
+    
+    if (titleElement) {
+        titleElement.textContent = bookTitle;
+    }
+    
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('modal-fade-in');
+    }
+}
+
+function closeArchiveModal() {
+    const modal = document.getElementById('archiveConfirmModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('modal-fade-in');
+    }
+    currentArchiveBookId = null;
+}
+
+async function confirmArchiveBook() {
+    if (!currentArchiveBookId) {
+        showNotification('❌ Lỗi!', 'Không có sách nào được chọn để archive', 'error');
+        return;
+    }
+    
+    const confirmBtn = document.getElementById('confirmArchiveBtn');
+    const originalText = confirmBtn.innerHTML;
+    
+    try {
+        // Disable button and show loading
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<div class="loading-spinner"></div> Đang xử lý...';
+        
+        const response = await fetch('../apis/books/archive_book.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                BookID: parseInt(currentArchiveBookId)
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            closeArchiveModal();
+            showNotification('🗑️ Đã xóa vĩnh viễn!', `Sách "${result.data.Title}" đã được xóa vĩnh viễn`, 'success');
+            
+            // Reload deleted books list
+            await loadDeletedBooks();
+        } else {
+            throw new Error(result.message);
+        }
+        
+    } catch (error) {
+        console.error('Archive error:', error);
+        showNotification('❌ Lỗi archive!', `Không thể xóa vĩnh viễn: ${error.message}`, 'error');
+        
+        // Reset button
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalText;
+    }
+}
+
 // Global variables
 let currentPage = 1;
 let currentSearch = '';
@@ -827,11 +1349,18 @@ function renderDeletedBooksTable(books) {
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${book.Quantity}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${formatDateTime(book.UpdatedAt)}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button class="restore-book-btn text-green-600 hover:text-green-800" title="Khôi phục" 
-                        data-book-id="${book.BookID}" data-book-title="${book.Title}">
-                    <i class="fas fa-trash-restore mr-1"></i>
-                    Khôi phục
-                </button>
+                <div class="flex space-x-2">
+                    <button class="restore-book-btn text-green-600 hover:text-green-800 flex items-center px-3 py-1 rounded transition-colors duration-200" 
+                            title="Khôi phục" data-book-id="${book.BookID}" data-book-title="${book.Title}">
+                        <i class="fas fa-undo mr-1"></i>
+                        Khôi phục
+                    </button>
+                    <button class="archive-book-btn text-red-600 hover:text-red-800 flex items-center px-3 py-1 rounded transition-colors duration-200" 
+                            title="Xóa vĩnh viễn" data-book-id="${book.BookID}" data-book-title="${book.Title}">
+                        <i class="fas fa-skull-crossbones mr-1"></i>
+                        Xóa vĩnh viễn
+                    </button>
+                </div>
             </td>
         </tr>
     `).join('');
@@ -1126,3 +1655,18 @@ async function confirmCategoryChange() {
         showNotification('❌ Lỗi!', `Không thể cập nhật danh mục: ${error.message}`, 'error');
     }
 }
+
+// Add a global fallback function
+window.openImportCsvModal = function() {
+    console.log('Global openImportCsvModal called');
+    const modal = document.getElementById('importCsvModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        console.log('Modal opened via global function');
+    } else {
+        console.error('Modal not found in global function');
+    }
+};
+
+// Remove the duplicate DOMContentLoaded - init.js will handle initialization
+// We'll add initCsvImport to the existing initialization in init.js

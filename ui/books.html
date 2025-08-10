@@ -841,6 +841,11 @@
                             Thêm Sách Mới
                         </button>
                         
+                        <button id="importCsvBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center">
+                            <i class="fas fa-file-csv mr-2"></i>
+                            Import CSV
+                        </button>
+                        
                         <button id="viewDeletedBooksBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center">
                             <i class="fas fa-trash-restore mr-2"></i>
                             Sách Đã Xóa
@@ -1264,6 +1269,171 @@
         </div>
     </div>
 
+    <!-- Import CSV Modal -->
+    <div id="importCsvModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Import Dữ Liệu Từ File CSV</h3>
+                    <button id="closeImportCsvModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- CSV Template Download -->
+                <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 class="font-medium text-blue-800 mb-2">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Hướng dẫn sử dụng
+                    </h4>
+                    <p class="text-sm text-blue-700 mb-3">
+                        Tải xuống file mẫu CSV để xem định dạng dữ liệu đúng, sau đó upload file CSV của bạn.
+                    </p>
+                    <button id="downloadTemplateBtn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center">
+                        <i class="fas fa-download mr-2"></i>
+                        Tải file mẫu CSV
+                    </button>
+                </div>
+
+                <!-- File Upload Section -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Chọn file CSV
+                    </label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="csvFileInput" class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary-dark focus-within:outline-none">
+                                    <span>Chọn file CSV</span>
+                                    <input id="csvFileInput" name="csvFile" type="file" accept=".csv" class="sr-only">
+                                </label>
+                                <p class="pl-1">hoặc kéo thả vào đây</p>
+                            </div>
+                            <p class="text-xs text-gray-500">
+                                Chỉ chấp nhận file .csv (tối đa 5MB)
+                            </p>
+                        </div>
+                    </div>
+                    <div id="selectedFileName" class="mt-2 text-sm text-gray-600 hidden"></div>
+                </div>
+
+                <!-- Preview Section -->
+                <div id="csvPreview" class="mb-6 hidden">
+                    <h4 class="font-medium text-gray-900 mb-3">Preview dữ liệu (5 dòng đầu)</h4>
+                    <div class="overflow-x-auto">
+                        <table id="previewTable" class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <!-- Headers will be dynamically added -->
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <!-- Rows will be dynamically added -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Import Options -->
+                <div id="importOptions" class="mb-6 hidden">
+                    <h4 class="font-medium text-gray-900 mb-3">Tùy chọn import</h4>
+                    <div class="space-y-3">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="skipFirstRow" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                            <span class="ml-2 text-sm text-gray-700">Bỏ qua dòng đầu tiên (header)</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="validateData" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                            <span class="ml-2 text-sm text-gray-700">Kiểm tra tính hợp lệ của dữ liệu</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="skipDuplicates" class="rounded border-gray-300 text-primary focus:ring-primary" checked>
+                            <span class="ml-2 text-sm text-gray-700">Bỏ qua sách trùng lặp (theo ISBN)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Import Status -->
+                <div id="importStatus" class="mb-6 hidden">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-700">Tiến trình import</span>
+                            <span id="importProgress" class="text-sm text-gray-600">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="importProgressBar" class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <div id="importDetails" class="mt-2 text-sm text-gray-600">
+                            Chuẩn bị import...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-3">
+                    <button id="cancelImportBtn" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        Hủy bỏ
+                    </button>
+                    <button id="startImportBtn" class="px-4 py-2 bg-primary border border-transparent rounded-md text-sm font-medium text-white hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <i class="fas fa-upload mr-2"></i>
+                        Bắt đầu Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Archive Book Confirmation Modal -->
+    <div id="archiveConfirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-50 hidden">
+        <div class="relative top-20 mx-auto p-5 border max-w-md shadow-2xl rounded-lg bg-white">
+            <div class="text-center">
+                <!-- Header with warning -->
+                <div class="bg-gradient-to-r from-red-600 to-red-700 text-white p-4 rounded-t-lg -m-5 mb-4">
+                    <div class="flex items-center justify-center mb-2">
+                        <i class="fas fa-exclamation-triangle text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold">⚠️ XÓA VĨNH VIỄN</h3>
+                    <p class="text-red-100 text-sm mt-1">Hành động này KHÔNG THỂ hoàn tác!</p>
+                </div>
+                
+                <!-- Book info -->
+                <div class="mb-4">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <h4 id="archiveBookTitle" class="font-semibold text-gray-800"></h4>
+                        <p class="text-sm text-gray-600">Sách này sẽ bị ẩn hoàn toàn khỏi hệ thống</p>
+                    </div>
+                </div>
+                
+                <!-- Warning messages -->
+                <div class="space-y-2 mb-6">
+                    <div class="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                        <i class="fas fa-skull-crossbones mr-2"></i>
+                        <span class="text-sm"><strong>CẢNH BÁO:</strong> Sách sẽ bị ẩn vĩnh viễn!</span>
+                    </div>
+                    <div class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <span class="text-sm"><strong>Lưu ý:</strong> ISBN sẽ được giải phóng để thêm sách mới.</span>
+                    </div>
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="flex justify-center space-x-3">
+                    <button id="cancelArchiveBtn" type="button" 
+                            class="px-4 py-2 bg-gray-500 text-white text-sm font-medium rounded-md hover:bg-gray-600 transition-colors duration-200">
+                        <i class="fas fa-times mr-1"></i>
+                        Hủy bỏ
+                    </button>
+                    <button id="confirmArchiveBtn" type="button" 
+                            class="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-medium rounded-md hover:from-red-700 hover:to-red-800 transition-all duration-200">
+                        <i class="fas fa-skull-crossbones mr-1"></i>
+                        XÓA VĨNH VIỄN
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script src="assets/js/sidebar.js"></script>
     <script src="assets/js/utils.js"></script>
@@ -1271,5 +1441,30 @@
     <script src="assets/js/modal.js"></script>
     <script src="assets/js/edit-modal.js"></script>
     <script src="assets/js/init.js"></script>
+    
+    <!-- Emergency CSV Import Script -->
+    <script>
+        // Emergency backup for CSV import
+        setTimeout(function() {
+            console.log('Emergency script running...');
+            const importBtn = document.getElementById('importCsvBtn');
+            if (importBtn && !importBtn.hasAttribute('data-listener-added')) {
+                console.log('Adding emergency listener to import button');
+                importBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Emergency listener triggered');
+                    
+                    const modal = document.getElementById('importCsvModal');
+                    if (modal) {
+                        modal.classList.remove('hidden');
+                        console.log('Modal opened via emergency script');
+                    } else {
+                        alert('Import CSV modal not found!');
+                    }
+                });
+                importBtn.setAttribute('data-listener-added', 'true');
+            }
+        }, 2000); // Wait 2 seconds for all scripts to load
+    </script>
 </body>
 </html>

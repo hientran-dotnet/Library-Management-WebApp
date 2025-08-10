@@ -54,9 +54,9 @@ try {
         throw new Exception('Số lượng không thể âm');
     }
     
-    // Kiểm tra ISBN đã tồn tại chưa (nếu có)
+    // Kiểm tra ISBN đã tồn tại chưa (nếu có) - chỉ kiểm tra sách active và deleted
     if ($isbn) {
-        $checkIsbn = $conn->prepare("SELECT BookID FROM books WHERE ISBN = ?");
+        $checkIsbn = $conn->prepare("SELECT BookID FROM books WHERE ISBN = ? AND Status IN ('active', 'deleted')");
         $checkIsbn->execute([$isbn]);
         if ($checkIsbn->fetch()) {
             throw new Exception('ISBN này đã tồn tại trong hệ thống');

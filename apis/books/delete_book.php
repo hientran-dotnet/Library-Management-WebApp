@@ -37,7 +37,7 @@ try {
     }
     
     // Kiểm tra sách có tồn tại và chưa bị xóa không
-    $checkBook = $conn->prepare("SELECT BookID, Title, IsDeleted FROM books WHERE BookID = ?");
+    $checkBook = $conn->prepare("SELECT BookID, Title, Status FROM books WHERE BookID = ?");
     $checkBook->execute([$bookId]);
     $book = $checkBook->fetch(PDO::FETCH_ASSOC);
     
@@ -51,7 +51,7 @@ try {
     }
     
     // Kiểm tra sách đã bị xóa chưa
-    if ($book['IsDeleted'] == 1) {
+    if ($book['Status'] === 'deleted' || $book['Status'] === 'archived') {
         http_response_code(400);
         echo json_encode([
             'success' => false,
@@ -60,8 +60,8 @@ try {
         exit();
     }
     
-    // Thực hiện soft delete - đánh dấu IsDeleted = 1
-    $sql = "UPDATE books SET IsDeleted = 1, UpdatedAt = CURRENT_TIMESTAMP WHERE BookID = ?";
+    // Thực hiện soft delete - đánh dấu Status = 'deleted'
+    $sql = "UPDATE books SET Status = 'deleted', UpdatedAt = CURRENT_TIMESTAMP WHERE BookID = ?";
     $stmt = $conn->prepare($sql);
     $result = $stmt->execute([$bookId]);
     

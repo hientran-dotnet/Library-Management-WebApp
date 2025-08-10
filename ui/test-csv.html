@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test CSV Import</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">Test CSV Import Functionality</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow">
+            <button id="testImportBtn" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                <i class="fas fa-file-csv mr-2"></i>
+                Test Import CSV
+            </button>
+            
+            <button onclick="testGlobalFunction()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 ml-4">
+                Test Global Function
+            </button>
+        </div>
+        
+        <!-- Simple Test Modal -->
+        <div id="testModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3 text-center">
+                    <h3 class="text-lg font-medium text-gray-900">Test Modal</h3>
+                    <div class="mt-2 px-7 py-3">
+                        <p class="text-sm text-gray-500">This is a test modal for CSV import functionality.</p>
+                    </div>
+                    <div class="items-center px-4 py-3">
+                        <button id="closeTestModal" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-gray-600">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global test function
+        function testGlobalFunction() {
+            console.log('Global function called');
+            alert('Global function works!');
+        }
+        
+        // Test modal functions
+        function openTestModal() {
+            console.log('Opening test modal');
+            const modal = document.getElementById('testModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                console.log('Modal opened');
+            } else {
+                console.error('Modal not found');
+            }
+        }
+        
+        function closeTestModal() {
+            console.log('Closing test modal');
+            const modal = document.getElementById('testModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                console.log('Modal closed');
+            }
+        }
+        
+        // Initialize when DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Test page loaded');
+            
+            const testBtn = document.getElementById('testImportBtn');
+            const closeBtn = document.getElementById('closeTestModal');
+            
+            if (testBtn) {
+                testBtn.addEventListener('click', function() {
+                    console.log('Test button clicked');
+                    openTestModal();
+                });
+                console.log('Test button event listener added');
+            }
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    closeTestModal();
+                });
+                console.log('Close button event listener added');
+            }
+            
+            console.log('Test initialization complete');
+        });
+    </script>
+</body>
+</html>

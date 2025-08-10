@@ -255,3 +255,158 @@ body {
         margin: 0 !important;
     }
 }
+
+/* Loading spinner for CSV import */
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* File dropzone styles */
+.file-dropzone {
+    transition: all 0.3s ease;
+}
+
+.file-dropzone:hover {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+}
+
+.file-dropzone.drag-over {
+    border-color: #2563eb !important;
+    background-color: #dbeafe !important;
+    transform: scale(1.02);
+}
+
+/* CSV preview table */
+.csv-preview-table {
+    max-height: 300px;
+    overflow: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.csv-preview-table th {
+    position: sticky;
+    top: 0;
+    background: #f9fafb;
+    z-index: 1;
+}
+
+/* Import progress bar */
+.import-progress-container {
+    background: #f3f4f6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.import-progress-bar {
+    height: 8px;
+    background: linear-gradient(90deg, #10b981, #059669);
+    transition: width 0.3s ease;
+    border-radius: 8px;
+}
+
+/* Import status indicators */
+.import-status-success {
+    color: #10b981;
+}
+
+.import-status-warning {
+    color: #f59e0b;
+}
+
+.import-status-error {
+    color: #ef4444;
+}
+
+/* Checkbox and form controls styling */
+.custom-checkbox {
+    accent-color: #3b82f6;
+}
+
+.form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Enhanced button hover effects */
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-1px);
+}
+
+.btn-secondary:hover {
+    background-color: #6b7280;
+    transform: translateY(-1px);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-1px);
+}
+
+/* Archive button styling */
+.archive-book-btn:hover {
+    background-color: #fef2f2;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+}
+
+.restore-book-btn:hover {
+    background-color: #f0fdf4;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+}
+
+/* Archive modal styling */
+.archive-modal-content {
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Warning message styling */
+.warning-message {
+    border-left: 4px solid;
+    transition: all 0.2s ease;
+}
+
+.warning-message:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Modal animations */
+.modal-fade-in {
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}

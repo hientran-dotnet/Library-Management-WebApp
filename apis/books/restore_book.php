@@ -37,7 +37,7 @@ try {
     }
     
     // Kiểm tra sách có tồn tại không
-    $checkBook = $conn->prepare("SELECT BookID, Title, IsDeleted FROM books WHERE BookID = ?");
+    $checkBook = $conn->prepare("SELECT BookID, Title, Status FROM books WHERE BookID = ?");
     $checkBook->execute([$bookId]);
     $book = $checkBook->fetch(PDO::FETCH_ASSOC);
     
@@ -51,23 +51,23 @@ try {
     }
     
     // Kiểm tra sách có bị xóa không
-    if ($book['IsDeleted'] == 0) {
+    if ($book['Status'] !== 'deleted') {
         http_response_code(400);
         echo json_encode([
             'success' => false,
-            'message' => 'Sách này chưa bị xóa nên không thể khôi phục'
+            'message' => 'Chỉ có thể khôi phục sách ở trạng thái đã xóa'
         ]);
         exit();
     }
     
-    // Thực hiện restore - đánh dấu IsDeleted = 0
-    $sql = "UPDATE books SET IsDeleted = 0, UpdatedAt = CURRENT_TIMESTAMP WHERE BookID = ?";
+    // Thực hiện restore - đánh dấu Status = 'active'
+    $sql = "UPDATE books SET Status = 'active', UpdatedAt = CURRENT_TIMESTAMP WHERE BookID = ?";
     $stmt = $conn->prepare($sql);
     $result = $stmt->execute([$bookId]);
     
     if ($result) {
         // Lấy thông tin sách sau khi khôi phục
-        $getBook = $conn->prepare("SELECT * FROM books WHERE BookID = ? AND IsDeleted = 0");
+        $getBook = $conn->prepare("SELECT * FROM books WHERE BookID = ? AND Status = 'active'");
         $getBook->execute([$bookId]);
         $restoredBook = $getBook->fetch(PDO::FETCH_ASSOC);
         

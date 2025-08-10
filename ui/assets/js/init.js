@@ -26,6 +26,18 @@ function initializePage() {
     // Initialize deleted books modal
     initDeletedBooksModal();
     
+    // Initialize CSV import functionality
+    if (typeof initCsvImport === 'function') {
+        console.log('Initializing CSV import...');
+        initCsvImport();
+    }
+    
+    // Initialize Archive functionality
+    if (typeof initArchiveFunctionality === 'function') {
+        console.log('Initializing Archive functionality...');
+        initArchiveFunctionality();
+    }
+    
     console.log('Page initialization complete');
     
     // Manual test for Add Book button
