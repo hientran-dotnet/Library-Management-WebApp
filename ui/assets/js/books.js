@@ -158,7 +158,7 @@ function renderBooksTable(books) {
                     <button class="edit-book-btn text-warning hover:text-warning hover:opacity-80" title="Chỉnh sửa" data-book-id="${book.BookID}">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="delete-book-btn text-danger hover:text-danger hover:opacity-80" title="Xóa" data-book-id="${book.BookID}" data-book-title="${escapeHtml(book.Title)}">
+                    <button class="delete-book-btn text-danger hover:text-danger hover:opacity-80" title="Xóa" data-book-id="${book.BookID}" data-book-title="${escapeHtml(book.Title)}" data-book-author="${escapeHtml(book.Author)}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -297,10 +297,12 @@ function addEditEventListeners() {
         }
         
         if (e.target.closest('.delete-book-btn')) {
-            const bookId = e.target.closest('.delete-book-btn').getAttribute('data-book-id');
-            const bookTitle = e.target.closest('.delete-book-btn').getAttribute('data-book-title');
+            const btn = e.target.closest('.delete-book-btn');
+            const bookId = btn.getAttribute('data-book-id');
+            const bookTitle = btn.getAttribute('data-book-title');
+            const bookAuthor = btn.getAttribute('data-book-author');
             if (bookId) {
-                deleteBook(bookId, bookTitle);
+                deleteBook(bookId, bookTitle, bookAuthor);
             }
         }
     });
@@ -568,34 +570,10 @@ async function bulkUpdateCategory(bookIds, categoryId) {
     }
 }
 
-// Delete single book (soft delete)
-async function deleteBook(bookId, bookTitle) {
-    try {
-        // Confirm deletion
-        const confirmed = confirm(`Bạn có chắc chắn muốn xóa sách "${bookTitle}"?\n\nLưu ý: Sách sẽ được ẩn đi và có thể khôi phục sau này.`);
-        if (!confirmed) {
-            return;
-        }
-        
-        showNotification('Đang xóa sách...', 'info');
-        
-        const response = await fetch(`../apis/books/delete_book.php?id=${bookId}`, {
-            method: 'DELETE'
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification(result.message, 'success');
-            loadBooks(); // Reload the books list
-        } else {
-            throw new Error(result.message);
-        }
-        
-    } catch (error) {
-        console.error('Error deleting book:', error);
-        showNotification('Có lỗi xảy ra khi xóa sách: ' + error.message, 'error');
-    }
+// Delete single book (soft delete) - Updated to use modern modal
+function deleteBook(bookId, bookTitle, bookAuthor) {
+    // Use the new confirmation modal instead of alert
+    showConfirmationModal(bookId, bookTitle, bookAuthor || 'Không rõ tác giả');
 }
 
 // Deleted Books Modal Management
@@ -829,3 +807,101 @@ function formatDateTime(dateTimeString) {
         minute: '2-digit' 
     });
 }
+
+// Confirmation Modal Management
+let currentBookToDelete = null;
+
+function showConfirmationModal(bookId, bookTitle, bookAuthor) {
+    currentBookToDelete = bookId;
+    
+    // Update modal content
+    document.getElementById('confirmBookTitle').textContent = bookTitle;
+    document.getElementById('confirmBookAuthor').textContent = `Tác giả: ${bookAuthor}`;
+    
+    // Show modal with animation
+    const modal = document.getElementById('confirmationModal');
+    modal.classList.add('show');
+    
+    // Add event listener for confirm button
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    confirmBtn.onclick = function() {
+        confirmDeleteBook();
+    };
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+    
+    // Add escape key listener
+    document.addEventListener('keydown', handleEscapeKey);
+}
+
+function closeConfirmationModal() {
+    const modal = document.getElementById('confirmationModal');
+    modal.classList.remove('show');
+    
+    // Reset state
+    currentBookToDelete = null;
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', handleEscapeKey);
+    
+    // Reset button state
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    confirmBtn.disabled = false;
+    confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Xóa sách';
+}
+
+function handleEscapeKey(e) {
+    if (e.key === 'Escape') {
+        closeConfirmationModal();
+    }
+}
+
+async function confirmDeleteBook() {
+    if (!currentBookToDelete) return;
+    
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    
+    // Set loading state
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<div class="loading-spinner"></div> Đang xóa...';
+    
+    try {
+        const response = await fetch(`../apis/books/delete_book.php?id=${currentBookToDelete}`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Close modal
+            closeConfirmationModal();
+            
+            // Show success notification
+            showNotification('✅ Thành công!', 'Sách đã được xóa thành công. Bạn có thể khôi phục từ "Sách Đã Xóa".', 'success');
+            
+            // Reload books table
+            loadBooks();
+            
+        } else {
+            throw new Error(result.message || 'Có lỗi xảy ra khi xóa sách');
+        }
+        
+    } catch (error) {
+        console.error('Error deleting book:', error);
+        
+        // Reset button state
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Xóa sách';
+        
+        // Show error notification
+        showNotification('❌ Lỗi!', `Không thể xóa sách: ${error.message}`, 'error');
+    }
+}
+
+// Add click outside to close modal
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('confirmationModal');
+    if (e.target === modal) {
+        closeConfirmationModal();
+    }
+});
