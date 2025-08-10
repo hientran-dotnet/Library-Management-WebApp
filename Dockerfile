@@ -46,7 +46,7 @@ EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost/health.php || curl -f http://localhost/health.txt || exit 1
+    CMD curl -f http://localhost/test.txt || curl -f http://localhost/health.txt || exit 1
 
-# Start Apache
-CMD ["/var/www/html/start.sh"]
+# Start Apache - debug first
+CMD ["bash", "-c", "echo 'Container starting...' && /var/www/html/start.sh"]

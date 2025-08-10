@@ -69,6 +69,16 @@ apache2ctl -S
 echo "Creating test endpoint..."
 echo "TEST OK" > /var/www/html/test.txt
 
+# Debug port and networking
+echo "=== Network Debug ==="
+echo "Checking port 80..."
+netstat -tlnp | grep :80 || echo "Port 80 not bound yet"
+
+# Check if Apache can bind to port
+echo "Testing Apache port binding..."
+apache2ctl configtest
+
 # Start Apache
 echo "=== Starting Apache ==="
+echo "Apache starting in foreground mode..."
 exec apache2-foreground
