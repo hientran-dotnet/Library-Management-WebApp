@@ -107,6 +107,196 @@
             line-height: 1.4;
         }
         
+        /* Confirmation Modal Styles */
+        .confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .confirmation-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .confirmation-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 0;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .confirmation-modal.show .confirmation-modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .confirmation-header {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .confirmation-icon {
+            width: 64px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .confirmation-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+        }
+
+        .confirmation-subtitle {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .confirmation-body {
+            padding: 24px;
+        }
+
+        .book-info {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            border-left: 4px solid #ef4444;
+        }
+
+        .book-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .book-author {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .warning-message {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+            color: #92400e;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .confirmation-footer {
+            padding: 24px;
+            background: #f9fafb;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-confirmation {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 100px;
+            justify-content: center;
+        }
+
+        .btn-cancel {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-cancel:hover {
+            background: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-delete:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 640px) {
+            .confirmation-modal-content {
+                width: 95%;
+                margin: 20px;
+            }
+            
+            .confirmation-footer {
+                flex-direction: column;
+            }
+            
+            .btn-confirmation {
+                width: 100%;
+            }
+        }
+        
         /* Sidebar Collapsible Styles */
         .sidebar {
             transition: width 0.3s ease-in-out;
@@ -744,6 +934,46 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="confirmation-modal">
+        <div class="confirmation-modal-content">
+            <div class="confirmation-header">
+                <div class="confirmation-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="confirmation-title">Xác nhận xóa sách</h3>
+                <p class="confirmation-subtitle">Hành động này không thể hoàn tác</p>
+            </div>
+            
+            <div class="confirmation-body">
+                <p style="color: #374151; margin-bottom: 16px;">
+                    Bạn có chắc chắn muốn xóa sách này khỏi thư viện?
+                </p>
+                
+                <div class="book-info">
+                    <div class="book-title" id="confirmBookTitle">Tên sách sẽ hiển thị ở đây</div>
+                    <div class="book-author" id="confirmBookAuthor">Tác giả sẽ hiển thị ở đây</div>
+                </div>
+                
+                <div class="warning-message">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Lưu ý: Sách sẽ được ẩn đi và có thể khôi phục sau này.</span>
+                </div>
+            </div>
+            
+            <div class="confirmation-footer">
+                <button type="button" class="btn-confirmation btn-cancel" onclick="closeConfirmationModal()">
+                    <i class="fas fa-times"></i>
+                    Hủy bỏ
+                </button>
+                <button type="button" class="btn-confirmation btn-delete" id="confirmDeleteBtn">
+                    <i class="fas fa-trash-alt"></i>
+                    Xóa sách
+                </button>
             </div>
         </div>
     </div>
