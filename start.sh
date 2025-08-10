@@ -27,17 +27,47 @@ apache2ctl configtest
 
 # Check if health endpoints exist
 echo "=== Health Endpoints ==="
-if [ -f "/var/www/html/ui/health.php" ]; then
-    echo "health.php exists"
+echo "Checking health files at root level:"
+if [ -f "/var/www/html/health.php" ]; then
+    echo "✅ /var/www/html/health.php exists"
+    ls -la /var/www/html/health.php
 else
-    echo "health.php missing"
+    echo "❌ /var/www/html/health.php missing"
+fi
+
+if [ -f "/var/www/html/health.txt" ]; then
+    echo "✅ /var/www/html/health.txt exists"
+    ls -la /var/www/html/health.txt
+    echo "Content:"
+    cat /var/www/html/health.txt
+else
+    echo "❌ /var/www/html/health.txt missing"
+fi
+
+echo "Checking health files in UI directory:"
+if [ -f "/var/www/html/ui/health.php" ]; then
+    echo "✅ /var/www/html/ui/health.php exists"
+else
+    echo "❌ /var/www/html/ui/health.php missing"
 fi
 
 if [ -f "/var/www/html/ui/health.txt" ]; then
-    echo "health.txt exists"
+    echo "✅ /var/www/html/ui/health.txt exists"
 else
-    echo "health.txt missing"
+    echo "❌ /var/www/html/ui/health.txt missing"
 fi
+
+# Test Apache before full start
+echo "=== Testing Apache Config ==="
+apache2ctl configtest
+
+# Show active Apache configuration
+echo "=== Active VirtualHost ==="
+apache2ctl -S
+
+# Create a simple test endpoint
+echo "Creating test endpoint..."
+echo "TEST OK" > /var/www/html/test.txt
 
 # Start Apache
 echo "=== Starting Apache ==="
