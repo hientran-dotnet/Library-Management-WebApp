@@ -1391,6 +1391,11 @@ function updateDeletedBooksStats(stats) {
     if (countSpan) {
         countSpan.textContent = `${stats.total_deleted_books} sách đã xóa`;
     }
+    
+    // Update delete all button state
+    if (typeof updateDeleteAllButtonState === 'function') {
+        updateDeleteAllButtonState();
+    }
 }
 
 // Restore book
@@ -1667,6 +1672,134 @@ window.openImportCsvModal = function() {
         console.error('Modal not found in global function');
     }
 };
+
+// Delete All Permanently Functionality
+function initDeleteAllPermanentlyFunctionality() {
+    const deleteAllBtn = document.getElementById('deleteAllPermanentlyBtn');
+    const modal = document.getElementById('deleteAllPermanentlyModal');
+    const confirmBtn = document.getElementById('confirmDeleteAllPermanentlyBtn');
+    
+    if (deleteAllBtn) {
+        deleteAllBtn.addEventListener('click', showDeleteAllPermanentlyModal);
+    }
+    
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', confirmDeleteAllPermanently);
+    }
+    
+    // Update button state based on deleted books count
+    updateDeleteAllButtonState();
+}
+
+function showDeleteAllPermanentlyModal() {
+    // Get current deleted books count
+    const countElement = document.getElementById('deletedBooksCount');
+    const countText = countElement ? countElement.textContent : '0 sách đã xóa';
+    const count = parseInt(countText.match(/\d+/)[0]) || 0;
+    
+    if (count === 0) {
+        showNotification('Không có sách nào để xóa vĩnh viễn', 'warning');
+        return;
+    }
+    
+    // Update count in modal
+    const totalCountElement = document.getElementById('totalDeletedBooksCount');
+    if (totalCountElement) {
+        totalCountElement.textContent = `${count} sách`;
+    }
+    
+    // Show modal
+    const modal = document.getElementById('deleteAllPermanentlyModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+function closeDeleteAllPermanentlyModal() {
+    const modal = document.getElementById('deleteAllPermanentlyModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+async function confirmDeleteAllPermanently() {
+    const confirmBtn = document.getElementById('confirmDeleteAllPermanentlyBtn');
+    const originalHtml = confirmBtn.innerHTML;
+    
+    try {
+        // Show loading state
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = `
+            <div class="loading-spinner"></div>
+            <span>Đang xóa...</span>
+        `;
+        
+        const response = await fetch('../apis/books/archive_all_deleted.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification(data.message, 'success');
+            
+            // Close modal
+            closeDeleteAllPermanentlyModal();
+            
+            // Refresh deleted books table
+            if (typeof loadDeletedBooks === 'function') {
+                loadDeletedBooks();
+            }
+            
+            // Update main books table if visible
+            if (typeof loadBooks === 'function') {
+                loadBooks();
+            }
+            
+            // Update button state
+            updateDeleteAllButtonState();
+            
+        } else {
+            showNotification(data.message || 'Có lỗi xảy ra khi xóa vĩnh viễn', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error in confirmDeleteAllPermanently:', error);
+        showNotification('Lỗi kết nối: ' + error.message, 'error');
+    } finally {
+        // Restore button state
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalHtml;
+    }
+}
+
+function updateDeleteAllButtonState() {
+    const deleteAllBtn = document.getElementById('deleteAllPermanentlyBtn');
+    const countElement = document.getElementById('deletedBooksCount');
+    
+    if (deleteAllBtn && countElement) {
+        const countText = countElement.textContent || '0 sách đã xóa';
+        const count = parseInt(countText.match(/\d+/)[0]) || 0;
+        
+        if (count > 0) {
+            deleteAllBtn.disabled = false;
+            deleteAllBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            deleteAllBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+        } else {
+            deleteAllBtn.disabled = true;
+            deleteAllBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            deleteAllBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+        }
+    }
+}
+
+// Make functions globally available
+window.closeDeleteAllPermanentlyModal = closeDeleteAllPermanentlyModal;
+window.confirmDeleteAllPermanently = confirmDeleteAllPermanently;
+window.initDeleteAllPermanentlyFunctionality = initDeleteAllPermanentlyFunctionality;
 
 // Remove the duplicate DOMContentLoaded - init.js will handle initialization
 // We'll add initCsvImport to the existing initialization in init.js
