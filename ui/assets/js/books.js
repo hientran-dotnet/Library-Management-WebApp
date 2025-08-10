@@ -1396,6 +1396,11 @@ function updateDeletedBooksStats(stats) {
     if (typeof updateDeleteAllButtonState === 'function') {
         updateDeleteAllButtonState();
     }
+    
+    // Update restore all button state
+    if (typeof updateRestoreAllButtonState === 'function') {
+        updateRestoreAllButtonState();
+    }
 }
 
 // Restore book
@@ -1800,6 +1805,135 @@ function updateDeleteAllButtonState() {
 window.closeDeleteAllPermanentlyModal = closeDeleteAllPermanentlyModal;
 window.confirmDeleteAllPermanently = confirmDeleteAllPermanently;
 window.initDeleteAllPermanentlyFunctionality = initDeleteAllPermanentlyFunctionality;
+
+// Restore All Books Functionality
+function initRestoreAllBooksFunctionality() {
+    const restoreAllBtn = document.getElementById('restoreAllBooksBtn');
+    const modal = document.getElementById('restoreAllBooksModal');
+    const confirmBtn = document.getElementById('confirmRestoreAllBooksBtn');
+    
+    if (restoreAllBtn) {
+        restoreAllBtn.addEventListener('click', showRestoreAllBooksModal);
+    }
+    
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', confirmRestoreAllBooks);
+    }
+    
+    // Update button state based on deleted books count
+    updateRestoreAllButtonState();
+}
+
+function showRestoreAllBooksModal() {
+    // Get current deleted books count
+    const countElement = document.getElementById('deletedBooksCount');
+    const countText = countElement ? countElement.textContent : '0 sách đã xóa';
+    const count = parseInt(countText.match(/\d+/)[0]) || 0;
+    
+    if (count === 0) {
+        showNotification('Không có sách nào để khôi phục', 'warning');
+        return;
+    }
+    
+    // Update count in modal
+    const totalCountElement = document.getElementById('totalRestoreBooksCount');
+    if (totalCountElement) {
+        totalCountElement.textContent = `${count} sách`;
+    }
+    
+    // Show modal
+    const modal = document.getElementById('restoreAllBooksModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+function closeRestoreAllBooksModal() {
+    const modal = document.getElementById('restoreAllBooksModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+async function confirmRestoreAllBooks() {
+    const confirmBtn = document.getElementById('confirmRestoreAllBooksBtn');
+    const originalHtml = confirmBtn.innerHTML;
+    
+    try {
+        // Show loading state
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = `
+            <div class="loading-spinner"></div>
+            <span>Đang khôi phục...</span>
+        `;
+        
+        const response = await fetch('../apis/books/restore_all_deleted.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification(data.message, 'success');
+            
+            // Close modal
+            closeRestoreAllBooksModal();
+            
+            // Refresh deleted books table
+            if (typeof loadDeletedBooks === 'function') {
+                loadDeletedBooks();
+            }
+            
+            // Update main books table if visible
+            if (typeof loadBooks === 'function') {
+                loadBooks();
+            }
+            
+            // Update button states
+            updateRestoreAllButtonState();
+            updateDeleteAllButtonState();
+            
+        } else {
+            showNotification(data.message || 'Có lỗi xảy ra khi khôi phục', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error in confirmRestoreAllBooks:', error);
+        showNotification('Lỗi kết nối: ' + error.message, 'error');
+    } finally {
+        // Restore button state
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalHtml;
+    }
+}
+
+function updateRestoreAllButtonState() {
+    const restoreAllBtn = document.getElementById('restoreAllBooksBtn');
+    const countElement = document.getElementById('deletedBooksCount');
+    
+    if (restoreAllBtn && countElement) {
+        const countText = countElement.textContent || '0 sách đã xóa';
+        const count = parseInt(countText.match(/\d+/)[0]) || 0;
+        
+        if (count > 0) {
+            restoreAllBtn.disabled = false;
+            restoreAllBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            restoreAllBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        } else {
+            restoreAllBtn.disabled = true;
+            restoreAllBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            restoreAllBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        }
+    }
+}
+
+// Make functions globally available
+window.closeRestoreAllBooksModal = closeRestoreAllBooksModal;
+window.confirmRestoreAllBooks = confirmRestoreAllBooks;
+window.initRestoreAllBooksFunctionality = initRestoreAllBooksFunctionality;
 
 // Remove the duplicate DOMContentLoaded - init.js will handle initialization
 // We'll add initCsvImport to the existing initialization in init.js
