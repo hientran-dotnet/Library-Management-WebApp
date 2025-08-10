@@ -38,6 +38,12 @@ function initializePage() {
         initArchiveFunctionality();
     }
     
+    // Initialize Delete All Permanently functionality
+    if (typeof initDeleteAllPermanentlyFunctionality === 'function') {
+        console.log('Initializing Delete All Permanently functionality...');
+        initDeleteAllPermanentlyFunctionality();
+    }
+    
     console.log('Page initialization complete');
     
     // Manual test for Add Book button
