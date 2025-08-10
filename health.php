@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 header('Cache-Control: no-cache');
 
 // Include database config
-require_once 'includes/config.php';
+require_once 'config/config.php';
 
 $health = [
     'status' => 'healthy',

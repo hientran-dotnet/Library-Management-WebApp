@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
 }
 
 // Include file kết nối database
-require_once '../../includes/config.php';
+require_once '../../config/config.php';
 
 try {
     // Lấy dữ liệu JSON từ request body
