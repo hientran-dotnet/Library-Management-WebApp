@@ -1,21 +1,38 @@
 <?php
-// Thông tin kết nối
-$host = "localhost"; // Địa chỉ máy chủ MySQL
-$db_name = "librarymanagementdb"; // Tên database
-$username = "root";      // Tên user MySQL
-$password = "";          // Mật khẩu MySQL
+// Database configuration
+// Use environment variables for Railway deployment, fallback to localhost for development
+$host = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: "localhost";
+$db_name = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: "librarymanagementdb";
+$username = $_ENV['DB_USER'] ?? getenv('DB_USER') ?: "root";
+$password = $_ENV['DB_PASSWORD'] ?? getenv('DB_PASSWORD') ?: "";
+$port = $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?: "3306";
 
 try {
-    // Tạo kết nối bằng PDO
-    $conn = new PDO("mysql:host=$host;dbname=$db_name;charset=utf8", $username, $password);
+    // Create PDO connection with Railway-compatible settings
+    $dsn = "mysql:host=$host;port=$port;dbname=$db_name;charset=utf8mb4";
+    
+    $conn = new PDO($dsn, $username, $password, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
+    ]);
 
-    // Thiết lập chế độ báo lỗi
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Kết nối thành công - không echo để tránh ảnh hưởng JSON response
+    // Connection successful - no echo to avoid affecting JSON responses
 } catch (PDOException $e) {
-    // Nếu lỗi
-    echo "Kết nối thất bại: " . $e->getMessage();
+    // Log error for debugging but don't expose sensitive info
+    error_log("Database connection failed: " . $e->getMessage());
+    
+    // Return generic error message
+    if (php_sapi_name() === 'cli') {
+        echo "Database connection failed. Check your configuration.\n";
+    } else {
+        http_response_code(500);
+        echo json_encode([
+            'success' => false, 
+            'message' => 'Database connection failed. Please try again later.'
+        ]);
+    }
     exit();
 }
 ?>
