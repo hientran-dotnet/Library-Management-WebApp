@@ -21,12 +21,12 @@ RUN a2enmod rewrite headers
 COPY . /var/www/html/
 
 # Copy Apache configuration
-COPY apache-vhost.conf /etc/apache2/sites-available/000-default.conf
+COPY deployment/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html && \
-    chmod +x /var/www/html/start.sh
+    chmod +x /var/www/html/deployment/start.sh
 
 # Configure Apache
 RUN echo "ServerName localhost" > /etc/apache2/conf-available/servername.conf && \
@@ -49,4 +49,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost/test.txt || curl -f http://localhost/health.txt || exit 1
 
 # Start Apache - debug first
-CMD ["bash", "-c", "echo 'Container starting...' && /var/www/html/start.sh"]
+CMD ["bash", "-c", "echo 'Container starting...' && /var/www/html/deployment/start.sh"]
