@@ -1,11 +1,21 @@
 <?php
 // Database configuration
-// Use environment variables for Railway deployment, fallback to localhost for development
-$host = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?: "localhost";
-$db_name = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: "librarymanagementdb";
-$username = $_ENV['DB_USER'] ?? getenv('DB_USER') ?: "root";
-$password = $_ENV['DB_PASSWORD'] ?? getenv('DB_PASSWORD') ?: "";
-$port = $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?: "3306";
+// Railway Public Network Connection
+if (isset($_SERVER['RAILWAY_ENVIRONMENT']) || strpos($_SERVER['HTTP_HOST'] ?? '', 'railway.app') !== false) {
+    // Railway Production - FROM YOUR MYSQL SERVICE
+    $host = "shortline.proxy.rlwy.net"; // Railway MySQL public host
+    $port = "10475";                    // Railway MySQL public port  
+    $username = "root";                 // MySQL username
+    $password = "BYBzBTxwZziIdHkRDrxsZDItWdcbQRgh";  // You need to get this from Railway
+    $db_name = "railway";               // MySQL database name
+} else {
+    // Local Development
+    $host = "localhost";
+    $db_name = "librarymanagementdb";
+    $username = "root";
+    $password = "";
+    $port = "3306";
+}
 
 // Connection retry logic for Railway
 $max_retries = 5;
