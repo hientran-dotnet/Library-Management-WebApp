@@ -7,7 +7,7 @@ if (isset($_SERVER['RAILWAY_ENVIRONMENT']) || strpos($_SERVER['HTTP_HOST'] ?? ''
     $port = "10475";                    // Railway MySQL public port  
     $username = "root";                 // MySQL username
     $password = "BYBzBTxwZziIdHkRDrxsZDItWdcbQRgh";  // You need to get this from Railway
-    $db_name = "railway";               // MySQL database name
+    $db_name = "railway";  // Use Railway's default database name
 } else {
     // Local Development
     $host = "localhost";

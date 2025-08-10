@@ -36,11 +36,11 @@ try {
                 Quantity,
                 Description,
                 ImagePath,
-                IsDeleted,
+                Status,
                 CreatedAt,
                 UpdatedAt
             FROM books 
-            WHERE BookID = ? AND IsDeleted = 0";
+            WHERE BookID = ? AND Status = 'active'";
     
     $stmt = $conn->prepare($sql);
     $stmt->execute([$bookId]);

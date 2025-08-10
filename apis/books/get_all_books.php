@@ -99,13 +99,13 @@ try {
     $statsStmt->execute();
     $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
     
-    // Thống kê theo danh mục (chỉ tính sách chưa bị xóa)
+    // Thống kê theo danh mục (chỉ tính sách active)
     $categorySql = "SELECT 
                         CategoryID,
                         COUNT(*) as book_count,
                         SUM(Quantity) as total_copies
                     FROM books 
-                    WHERE IsDeleted = 0
+                    WHERE Status = 'active'
                     GROUP BY CategoryID 
                     ORDER BY book_count DESC";
     $categoryStmt = $conn->prepare($categorySql);
