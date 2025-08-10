@@ -1,0 +1,29 @@
+# Git Workflow Configuration
+# Library Management System
+
+[gitflow "branch"]
+    master = main
+    develop = develop
+
+[gitflow "prefix"]
+    feature = feature/
+    bugfix = bugfix/
+    release = release/
+    hotfix = hotfix/
+    support = support/
+
+[workflow]
+    # Main branch: production-ready code (auto-deployed to Railway)
+    production = main
+    
+    # Development branch: integration of features
+    development = develop
+    
+    # Feature branches: new features development
+    feature_prefix = feature/
+    
+    # Bugfix branches: bug fixes
+    bugfix_prefix = bugfix/
+    
+    # Hotfix branches: urgent production fixes
+    hotfix_prefix = hotfix/
