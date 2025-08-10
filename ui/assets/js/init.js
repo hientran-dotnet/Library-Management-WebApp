@@ -44,6 +44,12 @@ function initializePage() {
         initDeleteAllPermanentlyFunctionality();
     }
     
+    // Initialize Restore All Books functionality
+    if (typeof initRestoreAllBooksFunctionality === 'function') {
+        console.log('Initializing Restore All Books functionality...');
+        initRestoreAllBooksFunctionality();
+    }
+    
     console.log('Page initialization complete');
     
     // Manual test for Add Book button
