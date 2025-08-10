@@ -2,35 +2,35 @@
 header('Content-Type: application/json');
 header('Cache-Control: no-cache');
 
+// Include database config
+require_once 'includes/config.php';
+
 $health = [
     'status' => 'healthy',
     'timestamp' => date('c'),
     'services' => []
 ];
 
-// Check if we can connect to database (only if environment variables are set)
-$db_host = $_ENV['DB_HOST'] ?? getenv('DB_HOST');
-if ($db_host && $db_host !== 'localhost') {
-    try {
-        $db_name = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?: 'railway';
-        $username = $_ENV['DB_USER'] ?? getenv('DB_USER') ?: 'root';
-        $password = $_ENV['DB_PASSWORD'] ?? getenv('DB_PASSWORD') ?: '';
-        $port = $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?: '3306';
-        
-        $dsn = "mysql:host=$db_host;port=$port;dbname=$db_name";
-        $pdo = new PDO($dsn, $username, $password, [
+// Check database connection using config.php settings
+try {
+    // Use the connection from config.php
+    if (isset($conn) && $conn instanceof PDO) {
+        $conn->query("SELECT 1");
+        $health['services']['database'] = 'connected';
+    } else {
+        // Create test connection if $conn is not available
+        $dsn = "mysql:host=$host;port=$port;dbname=$db_name;charset=utf8mb4";
+        $test_pdo = new PDO($dsn, $username, $password, [
             PDO::ATTR_TIMEOUT => 5,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
         ]);
-        
-        $pdo->query("SELECT 1");
+        $test_pdo->query("SELECT 1");
         $health['services']['database'] = 'connected';
-    } catch (Exception $e) {
-        $health['services']['database'] = 'disconnected';
-        $health['status'] = 'degraded';
     }
-} else {
-    $health['services']['database'] = 'not_configured';
+} catch (Exception $e) {
+    $health['services']['database'] = 'disconnected';
+    $health['status'] = 'degraded';
+    $health['database_error'] = $e->getMessage();
 }
 
 // Check if PHP is working
