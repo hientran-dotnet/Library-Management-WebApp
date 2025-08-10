@@ -1,38 +1,84 @@
 // Notification functions
 function showNotification(title, message, type = 'success', duration = 5000) {
+    console.log(`Showing notification: ${title} - ${message} - ${type}`); // Debug log
+    
+    // Close any existing notifications of the same type to prevent overlap
+    const existingNotifications = document.querySelectorAll(`.notification-${type}`);
+    existingNotifications.forEach(notification => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    });
+    
+    // Define colors for different types
+    const typeColors = {
+        success: { bg: '#d4edda', border: '#28a745', color: '#155724' },
+        error: { bg: '#f8d7da', border: '#dc3545', color: '#721c24' },
+        warning: { bg: '#fff3cd', border: '#ffc107', color: '#856404' },
+        info: { bg: '#d1ecf1', border: '#17a2b8', color: '#0c5460' }
+    };
+    
+    const colors = typeColors[type] || typeColors.success;
+    
     const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
+    notification.className = `notification-${type}`;
+    notification.style.cssText = `
+        position: fixed !important;
+        top: 20px !important;
+        right: 20px !important;
+        width: 350px !important;
+        padding: 16px !important;
+        background-color: ${colors.bg} !important;
+        border-left: 4px solid ${colors.border} !important;
+        color: ${colors.color} !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        z-index: 9999 !important;
+        font-family: Arial, sans-serif !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateX(0) !important;
+    `;
     
     notification.innerHTML = `
-        <div class="notification-header">
-            <div class="notification-title">${title}</div>
-            <button class="notification-close" onclick="closeNotification(this)">×</button>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <div style="font-weight: bold; font-size: 16px; flex: 1;">${title}</div>
+            <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer; padding: 0; margin-left: 10px; opacity: 0.7;">×</button>
         </div>
-        <div class="notification-body">${message}</div>
+        <div style="font-size: 14px; line-height: 1.4;">${message}</div>
     `;
     
     document.body.appendChild(notification);
-    
-    // Show animation
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 100);
+    console.log('Notification element added to body'); // Debug log
     
     // Auto hide after duration
     setTimeout(() => {
-        closeNotification(notification.querySelector('.notification-close'));
+        if (notification.parentElement) {
+            notification.remove();
+        }
     }, duration);
 }
 
 function closeNotification(button) {
     const notification = button.closest('.notification');
-    notification.classList.remove('show');
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-        }
-    }, 300);
+    if (notification) {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }
 }
+
+// Make closeNotification globally available
+window.closeNotification = closeNotification;
+
+// Test function for debugging notifications (có thể xóa sau khi hoàn thành)
+window.testNotification = function() {
+    console.log('Test notification function called');
+    showNotification('🧪 Test!', 'Đây là test notification sử dụng showNotification()', 'info');
+};
 
 // Global variables
 let currentPage = 1;
@@ -446,7 +492,7 @@ function getSelectedBookIds() {
 // Bulk delete books
 async function bulkDeleteBooks(bookIds) {
     try {
-        showNotification('Đang xóa sách...', 'info');
+        showNotification('🗑️ Đang xóa...', 'Đang xóa các sách đã chọn...', 'info');
         
         for (const bookId of bookIds) {
             const response = await fetch(`../apis/books/delete_book.php?id=${bookId}`, {
@@ -458,12 +504,12 @@ async function bulkDeleteBooks(bookIds) {
             }
         }
         
-        showNotification(`Đã xóa thành công ${bookIds.length} sách!`, 'success');
+        showNotification('✅ Xóa thành công!', `Đã xóa thành công ${bookIds.length} sách!`, 'success');
         loadBooks(); // Reload the books list
         
     } catch (error) {
         console.error('Error deleting books:', error);
-        showNotification('Có lỗi xảy ra khi xóa sách: ' + error.message, 'error');
+        showNotification('❌ Lỗi xóa sách!', 'Có lỗi xảy ra khi xóa sách: ' + error.message, 'error');
     }
 }
 
@@ -484,12 +530,12 @@ function exportSelectedBooks(bookIds) {
         
         if (selectedBooks.length > 0) {
             downloadExcel(selectedBooks, `selected_books_${new Date().toISOString().slice(0,10)}.xlsx`);
-            showNotification(`Đã xuất ${selectedBooks.length} sách ra Excel!`, 'success');
+            showNotification('📊 Xuất Excel thành công!', `Đã xuất ${selectedBooks.length} sách ra Excel!`, 'success');
         }
         
     } catch (error) {
         console.error('Error exporting books:', error);
-        showNotification('Có lỗi xảy ra khi xuất Excel: ' + error.message, 'error');
+        showNotification('❌ Lỗi xuất Excel!', 'Có lỗi xảy ra khi xuất Excel: ' + error.message, 'error');
     }
 }
 
@@ -532,41 +578,92 @@ function downloadExcel(data, filename) {
     link.click();
 }
 
-// Show bulk category change modal
-function showBulkCategoryModal(bookIds) {
-    // For now, just show a simple prompt
-    const newCategory = prompt(`Chọn danh mục mới cho ${bookIds.length} sách:\n1. Tiểu thuyết\n2. Khoa học\n3. Lịch sử\n4. Văn học\n5. Truyện tranh\n\nNhập số từ 1-5:`);
-    
-    if (newCategory && newCategory >= 1 && newCategory <= 5) {
-        bulkUpdateCategory(bookIds, newCategory);
-    }
-}
+// Show bulk category change modal - REMOVED OLD VERSION
+// This function is now implemented in the new modal system below
 
 // Bulk update category
 async function bulkUpdateCategory(bookIds, categoryId) {
     try {
-        showNotification('Đang cập nhật danh mục...', 'info');
+        const startTime = Date.now();
+        let loadingNotificationShown = false;
         
+        // Show loading notification after 1 second delay for slow operations
+        const loadingTimeout = setTimeout(() => {
+            showNotification('🔄 Đang cập nhật...', 'Đang cập nhật danh mục cho các sách đã chọn...', 'info');
+            loadingNotificationShown = true;
+        }, 1000);
+        
+        let successCount = 0;
+        let errorCount = 0;
+        const errors = [];
+        
+        // Process books one by one with better error handling
         for (const bookId of bookIds) {
-            const formData = new FormData();
-            formData.append('categoryId', categoryId);
-            
-            const response = await fetch(`../apis/books/update_book_category.php?id=${bookId}`, {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Không thể cập nhật sách ID: ${bookId}`);
+            try {
+                const formData = new FormData();
+                formData.append('categoryId', categoryId);
+                
+                const response = await fetch(`../apis/books/update_book_category.php?id=${bookId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                    errors.push(`Sách ID ${bookId}: ${result.message}`);
+                }
+                
+            } catch (error) {
+                errorCount++;
+                errors.push(`Sách ID ${bookId}: ${error.message}`);
+                console.error(`Error updating book ${bookId}:`, error);
             }
         }
         
-        showNotification(`Đã cập nhật danh mục cho ${bookIds.length} sách!`, 'success');
+        // Clear loading timeout
+        clearTimeout(loadingTimeout);
+        
+        const endTime = Date.now();
+        const duration = endTime - startTime;
+        
+        // If operation was fast (< 1s), only show success notification
+        // If operation was slow and loading notification was shown, wait a bit before showing success
+        if (loadingNotificationShown && duration < 2000) {
+            // Wait for user to read the loading message before showing success
+            await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+        
+        // Show results
+        if (successCount > 0) {
+            const categoryNames = {
+                1: 'Công nghệ',
+                2: 'Văn học', 
+                3: 'Khoa học',
+                4: 'Lịch sử',
+                5: 'Truyện tranh',
+                6: 'Khác'
+            };
+            
+            const categoryName = categoryNames[categoryId] || 'Không xác định';
+            
+            if (errorCount === 0) {
+                showNotification('✅ Thành công!', `Đã cập nhật danh mục "${categoryName}" cho ${successCount} sách!`, 'success');
+            } else {
+                showNotification('⚠️ Hoàn thành một phần', `Đã cập nhật ${successCount} sách thành công, ${errorCount} sách lỗi.`, 'warning');
+            }
+        } else {
+            throw new Error('Không thể cập nhật bất kỳ sách nào: ' + errors.join(', '));
+        }
+        
         loadBooks(); // Reload the books list
         
     } catch (error) {
         console.error('Error updating category:', error);
-        showNotification('Có lỗi xảy ra khi cập nhật danh mục: ' + error.message, 'error');
+        throw error; // Re-throw to be handled by modal
     }
 }
 
@@ -776,7 +873,7 @@ async function restoreBook(bookId, bookTitle) {
             return;
         }
         
-        showNotification('Đang khôi phục sách...', 'info');
+        showNotification('🔄 Đang khôi phục...', 'Đang khôi phục sách đã chọn...', 'info');
         
         const response = await fetch(`../apis/books/restore_book.php?id=${bookId}`, {
             method: 'POST'
@@ -785,7 +882,7 @@ async function restoreBook(bookId, bookTitle) {
         const result = await response.json();
         
         if (result.success) {
-            showNotification(result.message, 'success');
+            showNotification('✅ Khôi phục thành công!', result.message, 'success');
             loadDeletedBooks(); // Reload deleted books list
             loadBooks(); // Reload main books list
         } else {
@@ -794,7 +891,7 @@ async function restoreBook(bookId, bookTitle) {
         
     } catch (error) {
         console.error('Error restoring book:', error);
-        showNotification('Có lỗi xảy ra khi khôi phục sách: ' + error.message, 'error');
+        showNotification('❌ Lỗi khôi phục!', 'Có lỗi xảy ra khi khôi phục sách: ' + error.message, 'error');
     }
 }
 
@@ -860,10 +957,18 @@ async function confirmDeleteBook() {
     if (!currentBookToDelete) return;
     
     const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const startTime = Date.now();
+    let loadingNotificationShown = false;
     
     // Set loading state
     confirmBtn.disabled = true;
     confirmBtn.innerHTML = '<div class="loading-spinner"></div> Đang xóa...';
+    
+    // Show loading notification after 1.5s delay
+    const loadingTimeout = setTimeout(() => {
+        showNotification('🔄 Đang xóa sách...', 'Đang thực hiện xóa sách, vui lòng đợi...', 'info');
+        loadingNotificationShown = true;
+    }, 1500);
     
     try {
         const response = await fetch(`../apis/books/delete_book.php?id=${currentBookToDelete}`, {
@@ -871,6 +976,22 @@ async function confirmDeleteBook() {
         });
         
         const result = await response.json();
+        
+        // Clear loading timeout
+        clearTimeout(loadingTimeout);
+        
+        const endTime = Date.now();
+        const duration = endTime - startTime;
+        
+        // If loading notification was shown, wait a bit before showing result
+        if (loadingNotificationShown) {
+            const minDisplayTime = 2000;
+            const waitTime = Math.max(0, minDisplayTime - duration);
+            
+            if (waitTime > 0) {
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+            }
+        }
         
         if (result.success) {
             // Close modal
@@ -889,6 +1010,9 @@ async function confirmDeleteBook() {
     } catch (error) {
         console.error('Error deleting book:', error);
         
+        // Clear loading timeout
+        clearTimeout(loadingTimeout);
+        
         // Reset button state
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Xóa sách';
@@ -904,4 +1028,101 @@ document.addEventListener('click', function(e) {
     if (e.target === modal) {
         closeConfirmationModal();
     }
+    
+    const bulkModal = document.getElementById('bulkCategoryModal');
+    if (e.target === bulkModal) {
+        closeBulkCategoryModal();
+    }
 });
+
+// Bulk Category Change Modal Management
+let selectedBooksForCategory = [];
+
+function showBulkCategoryModal(bookIds) {
+    selectedBooksForCategory = bookIds;
+    
+    // Update modal content
+    const countElement = document.getElementById('selectedBooksCount');
+    countElement.textContent = `${bookIds.length} sách được chọn`;
+    
+    // Reset category selection
+    document.getElementById('newCategorySelect').value = '';
+    
+    // Show modal with animation
+    const modal = document.getElementById('bulkCategoryModal');
+    modal.classList.add('show');
+    
+    // Add event listener for confirm button
+    const confirmBtn = document.getElementById('confirmCategoryChangeBtn');
+    confirmBtn.onclick = function() {
+        confirmCategoryChange();
+    };
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+    
+    // Add escape key listener
+    document.addEventListener('keydown', handleBulkCategoryEscapeKey);
+}
+
+function closeBulkCategoryModal() {
+    const modal = document.getElementById('bulkCategoryModal');
+    modal.classList.remove('show');
+    
+    // Reset state
+    selectedBooksForCategory = [];
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', handleBulkCategoryEscapeKey);
+    
+    // Reset button state
+    const confirmBtn = document.getElementById('confirmCategoryChangeBtn');
+    confirmBtn.disabled = false;
+    confirmBtn.innerHTML = '<i class="fas fa-save"></i> Cập nhật danh mục';
+}
+
+function handleBulkCategoryEscapeKey(e) {
+    if (e.key === 'Escape') {
+        closeBulkCategoryModal();
+    }
+}
+
+async function confirmCategoryChange() {
+    const newCategoryId = document.getElementById('newCategorySelect').value;
+    
+    if (!newCategoryId) {
+        showNotification('❌ Lỗi!', 'Vui lòng chọn danh mục mới', 'error');
+        return;
+    }
+    
+    if (selectedBooksForCategory.length === 0) {
+        showNotification('❌ Lỗi!', 'Không có sách nào được chọn', 'error');
+        return;
+    }
+    
+    const confirmBtn = document.getElementById('confirmCategoryChangeBtn');
+    
+    // Set loading state
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<div class="loading-spinner"></div> Đang cập nhật...';
+    
+    try {
+        // Call the existing bulk update function
+        await bulkUpdateCategory(selectedBooksForCategory, newCategoryId);
+        
+        // Close modal
+        closeBulkCategoryModal();
+        
+        // Reset checkboxes
+        resetCheckboxStates();
+        
+    } catch (error) {
+        console.error('Error updating category:', error);
+        
+        // Reset button state
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<i class="fas fa-save"></i> Cập nhật danh mục';
+        
+        // Show error notification
+        showNotification('❌ Lỗi!', `Không thể cập nhật danh mục: ${error.message}`, 'error');
+    }
+}
