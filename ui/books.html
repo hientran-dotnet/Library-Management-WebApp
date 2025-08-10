@@ -1129,8 +1129,14 @@
                         <input type="text" id="deletedBooksSearch" placeholder="Tìm kiếm sách đã xóa..." 
                                class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
                     </div>
-                    <div class="text-sm text-gray-600">
-                        <span id="deletedBooksCount">0 sách đã xóa</span>
+                    <div class="flex items-center space-x-4">
+                        <button id="deleteAllPermanentlyBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 flex items-center space-x-2 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                            <i class="fas fa-trash-alt"></i>
+                            <span>Xóa Vĩnh Viễn Tất Cả</span>
+                        </button>
+                        <div class="text-sm text-gray-600">
+                            <span id="deletedBooksCount">0 sách đã xóa</span>
+                        </div>
                     </div>
                 </div>
                 
@@ -1466,5 +1472,69 @@
             }
         }, 2000); // Wait 2 seconds for all scripts to load
     </script>
+
+    <!-- Delete All Permanently Confirmation Modal -->
+    <div id="deleteAllPermanentlyModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-50 hidden">
+        <div class="relative top-20 mx-auto p-5 border max-w-lg shadow-2xl rounded-lg bg-white">
+            <div class="text-center">
+                <!-- Header with severe warning -->
+                <div class="bg-gradient-to-r from-red-700 to-red-800 text-white p-6 rounded-t-lg -m-5 mb-6">
+                    <div class="w-16 h-16 bg-red-900 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse">
+                        <i class="fas fa-exclamation-triangle text-3xl text-yellow-300"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">CẢNH BÁO NGHIÊM TRỌNG</h3>
+                    <p class="text-red-100 text-sm">Hành động này không thể hoàn tác</p>
+                </div>
+                
+                <!-- Warning content -->
+                <div class="space-y-4 mb-6">
+                    <h4 class="text-lg font-semibold text-red-700">Xóa Vĩnh Viễn Tất Cả Sách Đã Xóa</h4>
+                    
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div class="flex items-center text-red-700 mb-2">
+                            <i class="fas fa-fire text-red-600 mr-2"></i>
+                            <span class="font-medium">Bạn sắp xóa vĩnh viễn:</span>
+                        </div>
+                        <div class="text-red-600 font-bold text-lg" id="totalDeletedBooksCount">0 sách</div>
+                    </div>
+                    
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <div class="flex items-start text-yellow-800">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-2 mt-1"></i>
+                            <div class="text-sm">
+                                <div class="font-medium mb-1">Lưu ý quan trọng:</div>
+                                <ul class="list-disc list-inside space-y-1 text-xs">
+                                    <li>Tất cả sách đã xóa sẽ bị xóa vĩnh viễn khỏi hệ thống</li>
+                                    <li>Dữ liệu không thể khôi phục sau khi xác nhận</li>
+                                    <li>ISBN của các sách này có thể được sử dụng lại</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-gray-600 text-sm">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Thao tác này sẽ chuyển trạng thái tất cả sách từ "deleted" sang "archived"
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="flex justify-center space-x-3">
+                    <button type="button" onclick="closeDeleteAllPermanentlyModal()" 
+                            class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-400 transition-all duration-200 flex items-center space-x-2">
+                        <i class="fas fa-times"></i>
+                        <span>Hủy Bỏ</span>
+                    </button>
+                    <button type="button" id="confirmDeleteAllPermanentlyBtn"
+                            class="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg font-medium hover:from-red-700 hover:to-red-800 transition-all duration-200 flex items-center space-x-2 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed">
+                        <i class="fas fa-fire"></i>
+                        <span>Xóa Vĩnh Viễn Tất Cả</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
