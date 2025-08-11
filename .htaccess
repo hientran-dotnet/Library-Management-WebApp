@@ -1,0 +1,25 @@
+RewriteEngine On
+
+# Redirect root to books page
+RewriteRule ^$ /ui/books.html [R=302,L]
+
+# Handle books.html at root level (redirect to ui/books.html)
+RewriteRule ^books\.html$ /ui/books.html [R=302,L]
+
+# Handle members.html at root level
+RewriteRule ^members\.html$ /ui/members.html [R=302,L]
+
+# Handle borrowing.html at root level  
+RewriteRule ^borrowing\.html$ /ui/borrowing.html [R=302,L]
+
+# Handle dashboard at root level
+RewriteRule ^dashboard\.html$ /ui/index.html [R=302,L]
+
+# Allow direct access to health check
+RewriteRule ^health\.php$ - [L]
+
+# Allow direct access to APIs
+RewriteRule ^apis/ - [L]
+
+# Block access to sensitive files
+RewriteRule ^(config|database|deployment|tools)/ - [F]

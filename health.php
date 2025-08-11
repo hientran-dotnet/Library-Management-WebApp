@@ -8,6 +8,8 @@ require_once 'config/config.php';
 $health = [
     'status' => 'healthy',
     'timestamp' => date('c'),
+    'document_root' => $_SERVER['DOCUMENT_ROOT'] ?? 'unknown',
+    'request_uri' => $_SERVER['REQUEST_URI'] ?? 'unknown',
     'services' => []
 ];
 
