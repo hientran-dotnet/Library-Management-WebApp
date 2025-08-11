@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library Management System</title>
     <script>
-        // Auto redirect to books page - FIXED PATH
-        window.location.href = '/books.html';
+        // Auto redirect to books page - FIXED PATH with cache busting
+        console.log('Redirecting to: /books.html');
+        window.location.replace('/books.html?t=' + new Date().getTime());
     </script>
     <style>
         body {
