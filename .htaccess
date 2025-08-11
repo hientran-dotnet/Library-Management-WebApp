@@ -1,19 +1,19 @@
 RewriteEngine On
 
-# Redirect root to books page
-RewriteRule ^$ /ui/books.html [R=302,L]
+# Redirect root to books page (internal rewrite)
+RewriteRule ^$ ui/books.html [L]
 
-# Handle books.html at root level (redirect to ui/books.html)
-RewriteRule ^books\.html$ /ui/books.html [R=302,L]
+# Handle books.html at root level (internal rewrite)
+RewriteRule ^books\.html$ ui/books.html [L]
 
-# Handle members.html at root level
-RewriteRule ^members\.html$ /ui/members.html [R=302,L]
+# Handle members.html at root level (internal rewrite)
+RewriteRule ^members\.html$ ui/members.html [L]
 
-# Handle borrowing.html at root level  
-RewriteRule ^borrowing\.html$ /ui/borrowing.html [R=302,L]
+# Handle borrowing.html at root level (internal rewrite)
+RewriteRule ^borrowing\.html$ ui/borrowing.html [L]
 
-# Handle dashboard at root level
-RewriteRule ^dashboard\.html$ /ui/index.html [R=302,L]
+# Handle dashboard at root level (internal rewrite)
+RewriteRule ^dashboard\.html$ ui/index.html [L]
 
 # Allow direct access to health check
 RewriteRule ^health\.php$ - [L]
