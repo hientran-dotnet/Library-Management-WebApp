@@ -1,5 +1,14 @@
 RewriteEngine On
 
+# Allow direct access to assets from clean URLs
+RewriteRule ^assets/(.*)$ ui/assets/$1 [L]
+
+# Allow direct access to APIs
+RewriteRule ^apis/ - [L]
+
+# Allow direct access to health check
+RewriteRule ^health\.php$ - [L]
+
 # Debug headers
 Header always set X-Rewrite-Debug "htaccess-loaded"
 

@@ -224,7 +224,7 @@ function resetImportModal() {
 }
 
 function downloadCsvTemplate() {
-    window.open('../apis/books/download_template.php', '_blank');
+    window.open(ApiHelper.getApiPath('/books/download_template.php'), '_blank');
 }
 
 function handleFileSelect(e) {
@@ -422,7 +422,7 @@ async function startCsvImport() {
         updateImportProgress(30, 'Đang upload file...');
         
         // Upload and import
-        const response = await fetch('../apis/books/import_csv.php', {
+        const response = await fetch(ApiHelper.getApiPath('/books/import_csv.php'), {
             method: 'POST',
             body: formData
         });
@@ -570,7 +570,7 @@ async function confirmArchiveBook() {
         confirmBtn.disabled = true;
         confirmBtn.innerHTML = '<div class="loading-spinner"></div> Đang xử lý...';
         
-        const response = await fetch('../apis/books/archive_book.php', {
+        const response = await fetch(ApiHelper.getApiPath('/books/archive_book.php'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1017,7 +1017,7 @@ async function bulkDeleteBooks(bookIds) {
         showNotification('🗑️ Đang xóa...', 'Đang xóa các sách đã chọn...', 'info');
         
         for (const bookId of bookIds) {
-            const response = await fetch(`../apis/books/delete_book.php?id=${bookId}`, {
+            const response = await fetch(ApiHelper.getApiPath(`/books/delete_book.php?id=${bookId}`), {
                 method: 'DELETE'
             });
             
@@ -1125,7 +1125,7 @@ async function bulkUpdateCategory(bookIds, categoryId) {
                 const formData = new FormData();
                 formData.append('categoryId', categoryId);
                 
-                const response = await fetch(`../apis/books/update_book_category.php?id=${bookId}`, {
+                const response = await fetch(ApiHelper.getApiPath(`/books/update_book_category.php?id=${bookId}`), {
                     method: 'POST',
                     body: formData
                 });
@@ -1414,7 +1414,7 @@ async function restoreBook(bookId, bookTitle) {
         
         showNotification('🔄 Đang khôi phục...', 'Đang khôi phục sách đã chọn...', 'info');
         
-        const response = await fetch(`../apis/books/restore_book.php?id=${bookId}`, {
+        const response = await fetch(ApiHelper.getApiPath(`/books/restore_book.php?id=${bookId}`), {
             method: 'POST'
         });
         
@@ -1510,7 +1510,7 @@ async function confirmDeleteBook() {
     }, 1500);
     
     try {
-        const response = await fetch(`../apis/books/delete_book.php?id=${currentBookToDelete}`, {
+        const response = await fetch(ApiHelper.getApiPath(`/books/delete_book.php?id=${currentBookToDelete}`), {
             method: 'DELETE'
         });
         
@@ -1739,7 +1739,7 @@ async function confirmDeleteAllPermanently() {
             <span>Đang xóa...</span>
         `;
         
-        const response = await fetch('../apis/books/archive_all_deleted.php', {
+        const response = await fetch(ApiHelper.getApiPath('/books/archive_all_deleted.php'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1867,7 +1867,7 @@ async function confirmRestoreAllBooks() {
             <span>Đang khôi phục...</span>
         `;
         
-        const response = await fetch('../apis/books/restore_all_deleted.php', {
+        const response = await fetch(ApiHelper.getApiPath('/books/restore_all_deleted.php'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
