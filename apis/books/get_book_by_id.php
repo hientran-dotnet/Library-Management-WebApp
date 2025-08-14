@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 // Include file kết nối database
-require_once '../../includes/config.php';
+require_once '../../config/config.php';
 
 try {
     // Lấy BookID từ URL parameter
@@ -36,11 +36,11 @@ try {
                 Quantity,
                 Description,
                 ImagePath,
-                IsDeleted,
+                Status,
                 CreatedAt,
                 UpdatedAt
             FROM books 
-            WHERE BookID = ? AND IsDeleted = 0";
+            WHERE BookID = ? AND Status = 'active'";
     
     $stmt = $conn->prepare($sql);
     $stmt->execute([$bookId]);

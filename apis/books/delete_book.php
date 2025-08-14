@@ -15,7 +15,7 @@ if (!in_array($_SERVER['REQUEST_METHOD'], ['DELETE', 'POST'])) {
 }
 
 // Include file kết nối database
-require_once '../../includes/config.php';
+require_once '../../config/config.php';
 
 try {
     // Lấy BookID từ URL parameter hoặc request body

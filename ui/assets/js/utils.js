@@ -2,8 +2,23 @@
 
 // API Helper functions
 const ApiHelper = {
-    // Base API URL
-    baseUrl: '../apis',
+    // Base API URL - Dynamic detection for clean URLs
+    get baseUrl() {
+        // Check if we're on a clean URL (no /ui/ in path)
+        const currentPath = window.location.pathname;
+        
+        if (currentPath === '/' || 
+            currentPath === '/books.html' || 
+            currentPath === '/members.html' || 
+            currentPath === '/borrowing.html' ||
+            currentPath === '/dashboard.html') {
+            // Clean URL - APIs are at root level
+            return './apis';
+        } else {
+            // Direct URL from /ui/ directory
+            return '../apis';
+        }
+    },
     
     // Generic fetch function
     async request(endpoint, options = {}) {
@@ -54,6 +69,23 @@ const ApiHelper = {
         return await this.request(endpoint, {
             method: 'DELETE'
         });
+    },
+    
+    // Helper function to get correct API path for any context
+    getApiPath(endpoint) {
+        const currentPath = window.location.pathname;
+        
+        if (currentPath === '/' || 
+            currentPath === '/books.html' || 
+            currentPath === '/members.html' || 
+            currentPath === '/borrowing.html' ||
+            currentPath === '/dashboard.html') {
+            // Clean URL - APIs are at root level
+            return `./apis${endpoint}`;
+        } else {
+            // Direct URL from /ui/ directory
+            return `../apis${endpoint}`;
+        }
     }
 };
 

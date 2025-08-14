@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Include file kết nối database
-require_once '../../includes/config.php';
+require_once '../../config/config.php';
 
 try {
     // Kiểm tra file upload
@@ -115,7 +115,7 @@ try {
         
         // Kiểm tra trùng lặp nếu được yêu cầu
         if ($skipDuplicates && !empty($bookData['ISBN'])) {
-            $checkDuplicate = $conn->prepare("SELECT BookID FROM books WHERE ISBN = ? AND IsDeleted = 0");
+            $checkDuplicate = $conn->prepare("SELECT BookID FROM books WHERE ISBN = ? AND Status = 'active'");
             $checkDuplicate->execute([$bookData['ISBN']]);
             if ($checkDuplicate->fetch()) {
                 $duplicates[] = "Dòng {$lineNumber}: Sách với ISBN '{$bookData['ISBN']}' đã tồn tại";
@@ -141,8 +141,8 @@ try {
     
     try {
         foreach ($data as $index => $bookData) {
-            $sql = "INSERT INTO books (Title, Author, CategoryID, ISBN, Quantity, PublishYear, Description, ImagePath, CreatedAt, UpdatedAt, IsDeleted) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0)";
+            $sql = "INSERT INTO books (Title, Author, CategoryID, ISBN, Quantity, PublishYear, Description, ImagePath, CreatedAt, UpdatedAt, Status) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'active')";
             
             $stmt = $conn->prepare($sql);
             $result = $stmt->execute([

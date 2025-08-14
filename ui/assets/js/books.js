@@ -224,7 +224,7 @@ function resetImportModal() {
 }
 
 function downloadCsvTemplate() {
-    window.open('../apis/books/download_template.php', '_blank');
+    window.open(ApiHelper.getApiPath('/books/download_template.php'), '_blank');
 }
 
 function handleFileSelect(e) {
@@ -422,7 +422,7 @@ async function startCsvImport() {
         updateImportProgress(30, 'Đang upload file...');
         
         // Upload and import
-        const response = await fetch('../apis/books/import_csv.php', {
+        const response = await fetch(ApiHelper.getApiPath('/books/import_csv.php'), {
             method: 'POST',
             body: formData
         });
@@ -570,7 +570,7 @@ async function confirmArchiveBook() {
         confirmBtn.disabled = true;
         confirmBtn.innerHTML = '<div class="loading-spinner"></div> Đang xử lý...';
         
-        const response = await fetch('../apis/books/archive_book.php', {
+        const response = await fetch(ApiHelper.getApiPath('/books/archive_book.php'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1017,7 +1017,7 @@ async function bulkDeleteBooks(bookIds) {
         showNotification('🗑️ Đang xóa...', 'Đang xóa các sách đã chọn...', 'info');
         
         for (const bookId of bookIds) {
-            const response = await fetch(`../apis/books/delete_book.php?id=${bookId}`, {
+            const response = await fetch(ApiHelper.getApiPath(`/books/delete_book.php?id=${bookId}`), {
                 method: 'DELETE'
             });
             
@@ -1125,7 +1125,7 @@ async function bulkUpdateCategory(bookIds, categoryId) {
                 const formData = new FormData();
                 formData.append('categoryId', categoryId);
                 
-                const response = await fetch(`../apis/books/update_book_category.php?id=${bookId}`, {
+                const response = await fetch(ApiHelper.getApiPath(`/books/update_book_category.php?id=${bookId}`), {
                     method: 'POST',
                     body: formData
                 });
@@ -1396,6 +1396,11 @@ function updateDeletedBooksStats(stats) {
     if (typeof updateDeleteAllButtonState === 'function') {
         updateDeleteAllButtonState();
     }
+    
+    // Update restore all button state
+    if (typeof updateRestoreAllButtonState === 'function') {
+        updateRestoreAllButtonState();
+    }
 }
 
 // Restore book
@@ -1409,7 +1414,7 @@ async function restoreBook(bookId, bookTitle) {
         
         showNotification('🔄 Đang khôi phục...', 'Đang khôi phục sách đã chọn...', 'info');
         
-        const response = await fetch(`../apis/books/restore_book.php?id=${bookId}`, {
+        const response = await fetch(ApiHelper.getApiPath(`/books/restore_book.php?id=${bookId}`), {
             method: 'POST'
         });
         
@@ -1505,7 +1510,7 @@ async function confirmDeleteBook() {
     }, 1500);
     
     try {
-        const response = await fetch(`../apis/books/delete_book.php?id=${currentBookToDelete}`, {
+        const response = await fetch(ApiHelper.getApiPath(`/books/delete_book.php?id=${currentBookToDelete}`), {
             method: 'DELETE'
         });
         
@@ -1734,7 +1739,7 @@ async function confirmDeleteAllPermanently() {
             <span>Đang xóa...</span>
         `;
         
-        const response = await fetch('../apis/books/archive_all_deleted.php', {
+        const response = await fetch(ApiHelper.getApiPath('/books/archive_all_deleted.php'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1800,6 +1805,135 @@ function updateDeleteAllButtonState() {
 window.closeDeleteAllPermanentlyModal = closeDeleteAllPermanentlyModal;
 window.confirmDeleteAllPermanently = confirmDeleteAllPermanently;
 window.initDeleteAllPermanentlyFunctionality = initDeleteAllPermanentlyFunctionality;
+
+// Restore All Books Functionality
+function initRestoreAllBooksFunctionality() {
+    const restoreAllBtn = document.getElementById('restoreAllBooksBtn');
+    const modal = document.getElementById('restoreAllBooksModal');
+    const confirmBtn = document.getElementById('confirmRestoreAllBooksBtn');
+    
+    if (restoreAllBtn) {
+        restoreAllBtn.addEventListener('click', showRestoreAllBooksModal);
+    }
+    
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', confirmRestoreAllBooks);
+    }
+    
+    // Update button state based on deleted books count
+    updateRestoreAllButtonState();
+}
+
+function showRestoreAllBooksModal() {
+    // Get current deleted books count
+    const countElement = document.getElementById('deletedBooksCount');
+    const countText = countElement ? countElement.textContent : '0 sách đã xóa';
+    const count = parseInt(countText.match(/\d+/)[0]) || 0;
+    
+    if (count === 0) {
+        showNotification('Không có sách nào để khôi phục', 'warning');
+        return;
+    }
+    
+    // Update count in modal
+    const totalCountElement = document.getElementById('totalRestoreBooksCount');
+    if (totalCountElement) {
+        totalCountElement.textContent = `${count} sách`;
+    }
+    
+    // Show modal
+    const modal = document.getElementById('restoreAllBooksModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+function closeRestoreAllBooksModal() {
+    const modal = document.getElementById('restoreAllBooksModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+async function confirmRestoreAllBooks() {
+    const confirmBtn = document.getElementById('confirmRestoreAllBooksBtn');
+    const originalHtml = confirmBtn.innerHTML;
+    
+    try {
+        // Show loading state
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = `
+            <div class="loading-spinner"></div>
+            <span>Đang khôi phục...</span>
+        `;
+        
+        const response = await fetch(ApiHelper.getApiPath('/books/restore_all_deleted.php'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification(data.message, 'success');
+            
+            // Close modal
+            closeRestoreAllBooksModal();
+            
+            // Refresh deleted books table
+            if (typeof loadDeletedBooks === 'function') {
+                loadDeletedBooks();
+            }
+            
+            // Update main books table if visible
+            if (typeof loadBooks === 'function') {
+                loadBooks();
+            }
+            
+            // Update button states
+            updateRestoreAllButtonState();
+            updateDeleteAllButtonState();
+            
+        } else {
+            showNotification(data.message || 'Có lỗi xảy ra khi khôi phục', 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error in confirmRestoreAllBooks:', error);
+        showNotification('Lỗi kết nối: ' + error.message, 'error');
+    } finally {
+        // Restore button state
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalHtml;
+    }
+}
+
+function updateRestoreAllButtonState() {
+    const restoreAllBtn = document.getElementById('restoreAllBooksBtn');
+    const countElement = document.getElementById('deletedBooksCount');
+    
+    if (restoreAllBtn && countElement) {
+        const countText = countElement.textContent || '0 sách đã xóa';
+        const count = parseInt(countText.match(/\d+/)[0]) || 0;
+        
+        if (count > 0) {
+            restoreAllBtn.disabled = false;
+            restoreAllBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            restoreAllBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        } else {
+            restoreAllBtn.disabled = true;
+            restoreAllBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+            restoreAllBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        }
+    }
+}
+
+// Make functions globally available
+window.closeRestoreAllBooksModal = closeRestoreAllBooksModal;
+window.confirmRestoreAllBooks = confirmRestoreAllBooks;
+window.initRestoreAllBooksFunctionality = initRestoreAllBooksFunctionality;
 
 // Remove the duplicate DOMContentLoaded - init.js will handle initialization
 // We'll add initCsvImport to the existing initialization in init.js

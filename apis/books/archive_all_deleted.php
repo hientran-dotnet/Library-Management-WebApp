@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-require_once '../../includes/config.php';
+require_once '../../config/config.php';
 
 try {
     // Use $conn from config.php instead of $pdo

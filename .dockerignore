@@ -1,0 +1,26 @@
+# Ignore development files
+.git
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+
+# Ignore logs
+*.log
+
+# Ignore temporary files
+*.tmp
+*.temp
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore local config (will use environment variables)
+local_config.php

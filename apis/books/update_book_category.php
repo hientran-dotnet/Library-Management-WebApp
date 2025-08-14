@@ -15,7 +15,7 @@ if (!in_array($_SERVER['REQUEST_METHOD'], ['POST', 'PUT'])) {
 }
 
 // Include file kết nối database
-require_once '../../includes/config.php';
+require_once '../../config/config.php';
 
 try {
     // Lấy BookID từ URL parameter
@@ -48,7 +48,7 @@ try {
     }
     
     // Kiểm tra sách có tồn tại và chưa bị xóa không
-    $checkBook = $conn->prepare("SELECT BookID, Title, CategoryID, IsDeleted FROM books WHERE BookID = ?");
+    $checkBook = $conn->prepare("SELECT BookID, Title, CategoryID, Status FROM books WHERE BookID = ?");
     $checkBook->execute([$bookId]);
     $book = $checkBook->fetch(PDO::FETCH_ASSOC);
     
@@ -62,7 +62,7 @@ try {
     }
     
     // Kiểm tra sách có bị xóa không
-    if ($book['IsDeleted'] == 1) {
+    if ($book['Status'] !== 'active') {
         http_response_code(400);
         echo json_encode([
             'success' => false,
@@ -88,7 +88,7 @@ try {
     }
     
     // Cập nhật CategoryID
-    $sql = "UPDATE books SET CategoryID = ?, UpdatedAt = CURRENT_TIMESTAMP WHERE BookID = ? AND IsDeleted = 0";
+    $sql = "UPDATE books SET CategoryID = ?, UpdatedAt = CURRENT_TIMESTAMP WHERE BookID = ? AND Status = 'active'";
     $stmt = $conn->prepare($sql);
     $result = $stmt->execute([$categoryId, $bookId]);
     
